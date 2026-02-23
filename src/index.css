@@ -1,0 +1,215 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+
+:root {
+  /* Primary TasDoneNa theme (pink + dark navy) */
+  --primary-color: #f54286;
+  --primary-dark: #d5326f;
+  --primary-light: #ff6fa5;
+  --accent-color: #243047;
+  --accent-light: #3a4761;
+  --accent-dark: #151b28;
+
+  /* Neutral & backgrounds */
+  --text-primary: #1a1a1a;
+  --text-secondary: #4a4a4a;
+  --text-muted: #6b7280;
+  --background-light: #f5f7fb;
+  --background-white: #ffffff;
+  --border-color: #e5e7eb;
+
+  /* Buttons */
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-hover: var(--primary-dark);
+  --btn-primary-text: #ffffff;
+
+  /* Inputs */
+  --input-bg: #ffffff;
+  --input-text: #1a1a1a;
+  --input-border: #d1d5db;
+  --input-focus: rgba(245, 66, 134, 0.25);
+}
+
+/* ===== GLOBAL STYLES ===== */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif !important;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-light);
+}
+
+body,
+div,
+p,
+span,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+textarea,
+button,
+label {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* ===== LOGIN BUTTON STYLES (copied from BRIMS, recolored) ===== */
+.btn-login {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border: none !important;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-login:hover {
+  background-color: var(--btn-primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 66, 134, 0.35);
+}
+
+.btn-login:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(245, 66, 134, 0.35);
+}
+
+.btn-login:disabled {
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Loading spinner animation */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Login logo responsiveness */
+.login-logo-row {
+  gap: 0.2rem;
+}
+
+.login-logo-img img {
+  max-width: 86px;
+}
+
+.login-logo-text {
+  max-width: 165px;
+}
+
+.login-logo-subtitle {
+  font-size: 0.53rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+@media (max-width: 575.98px) {
+  .login-logo-row {
+    gap: 0.15rem;
+  }
+
+  .login-logo-img img {
+    max-width: 72px;
+    height: auto;
+  }
+
+  .login-logo-text {
+    max-width: 200px;
+  }
+
+  .login-logo-subtitle {
+    font-size: 0.5rem;
+  }
+}
+
+/* Login register link hover */
+.login-register-link {
+  position: relative;
+  text-decoration: none;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.login-register-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background-color: var(--primary-light);
+  opacity: 0;
+  transform: scaleX(0.8);
+  transform-origin: center;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.login-register-link:hover {
+  color: var(--primary-light) !important;
+  opacity: 1;
+}
+
+.login-register-link:hover::after {
+  opacity: 0.6;
+  transform: scaleX(1);
+}
+
+/* SweetAlert2 mobile tweaks (from BRIMS) */
+@media (max-width: 480px) {
+  .swal2-popup {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 0.5rem !important;
+  }
+}
