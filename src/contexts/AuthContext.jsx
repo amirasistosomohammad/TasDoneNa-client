@@ -56,17 +56,26 @@ export const AuthProvider = ({ children }) => {
 
   const resendOtp = (email) => api.post("/resend-otp", { email });
 
+  const forgotPassword = (email) =>
+    api.post("/forgot-password", { email });
+
+  const resetPassword = ({ email, token, password, password_confirmation }) =>
+    api.post("/reset-password", { email, token, password, password_confirmation });
+
   const login = async (email, password) => {
     try {
       const data = await api.post("/login", { email, password });
       setAuth(data.token, data.user);
       return { success: true, user: data.user };
     } catch (err) {
+      // Prefer validation error (e.g. "Invalid credentials.") so we don't leak account status
+      const validationError = err.data?.errors?.email?.[0];
       const message =
+        validationError ||
         err.data?.message ||
         (err.data?.reason ? `Rejected: ${err.data.reason}` : null) ||
         err.message ||
-        "Login failed.";
+        "Invalid credentials.";
       return { success: false, error: message, status: err.data?.status };
     }
   };
@@ -89,6 +98,8 @@ export const AuthProvider = ({ children }) => {
     register,
     verifyEmail,
     resendOtp,
+    forgotPassword,
+    resetPassword,
     setAuth,
     isAuthenticated: !!user && !!token,
   };

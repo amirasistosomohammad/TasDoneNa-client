@@ -6,6 +6,10 @@ import PublicRoute from "./components/PublicRoute.jsx";
 import Login from "./pages/public/Login.jsx";
 import Register from "./pages/public/Register.jsx";
 import VerifyEmail from "./pages/public/VerifyEmail.jsx";
+import ForgotPassword from "./pages/public/ForgotPassword.jsx";
+import ResetPassword from "./pages/public/ResetPassword.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Layout from "./layout/Layout.jsx";
 import { ToastContainer } from "./services/notificationService.js";
 
 const App = () => {
@@ -39,13 +43,28 @@ const App = () => {
             }
           />
           <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicRoute>
+                <ResetPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <div className="p-4">
-                  <h1>Dashboard</h1>
-                  <p>Welcome! (Phase 2: User approval &amp; task management coming next.)</p>
-                </div>
+                <Layout>
+                  <Dashboard />
+                </Layout>
               </ProtectedRoute>
             }
           />

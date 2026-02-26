@@ -66,7 +66,7 @@ const Login = () => {
       } else {
         showAlert.error(
           "Login Failed",
-          result.error || "Please check your credentials and try again.",
+          result.error || "Invalid credentials.",
         );
       }
     } catch (error) {
@@ -233,6 +233,26 @@ const Login = () => {
             </span>
           </div>
 
+          {/* Forgot password */}
+          <div className="text-end mb-3">
+            <Link
+              to="/forgot-password"
+              className="small fw-semibold text-decoration-none"
+              style={{
+                color: theme.textSecondary,
+                transition: "color 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = theme.primary;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = theme.textSecondary;
+              }}
+            >
+              Forgot password?
+            </Link>
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
@@ -255,11 +275,7 @@ const Login = () => {
             style={{ color: theme.textSecondary }}
           >
             Don&apos;t have an account?{" "}
-            <Link
-              to="/register"
-              className="fw-bold login-register-link"
-              style={{ color: theme.primary }}
-            >
+            <Link to="/register" className="fw-bold tas-auth-link">
               Register here
             </Link>
           </p>

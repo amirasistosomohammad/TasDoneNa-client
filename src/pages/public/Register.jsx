@@ -12,6 +12,7 @@ import {
   FaSpinner,
   FaCheck,
   FaExclamationTriangle,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import { showAlert, showToast } from "../../services/notificationService.js";
@@ -26,6 +27,19 @@ const Register = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [checkingEmail, setCheckingEmail] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLetter: false,
+    hasNumber: false,
+  });
+  const [showPasswordCriteria, setShowPasswordCriteria] = useState(false);
+  const [step, setStep] = useState("form"); // 'form' | 'otp'
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError] = useState("");
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const otpInputRefs = useRef([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -40,7 +54,7 @@ const Register = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, verifyEmail, resendOtp, login } = useAuth();
 
   // TasDoneNa theme colors
   const theme = {
@@ -64,35 +78,152 @@ const Register = () => {
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const t = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [resendCooldown]);
+
+  useEffect(() => {
+    if (step === "otp") {
+      // Smoothly scroll to top so OTP panel is fully visible
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      // After the slide animation finishes, focus the first OTP input
+      if (otpInputRefs.current[0]) {
+        const t = setTimeout(() => otpInputRefs.current[0]?.focus(), 350);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [step]);
+
+  const handleOtpDigitChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+    const next = [...otpDigits];
+    next[index] = value.slice(-1);
+    setOtpDigits(next);
+    setOtpError("");
+    if (value && index < 5) otpInputRefs.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").slice(0, 6);
+    if (/^\d+$/.test(pasted)) {
+      const arr = pasted.split("").concat(Array(6 - pasted.length).fill(""));
+      setOtpDigits(arr.slice(0, 6));
+      setOtpError("");
+      const last = Math.min(pasted.length - 1, 5);
+      otpInputRefs.current[last]?.focus();
+    }
+  };
+
+  const handleOtpVerify = async (e) => {
+    e.preventDefault();
+    const otpString = otpDigits.join("");
+    if (otpString.length !== 6) {
+      setOtpError("Please enter the complete 6-digit code.");
+      return;
+    }
+    setVerifyLoading(true);
+    setOtpError("");
+    try {
+      await verifyEmail(form.email.trim(), otpString);
+      const loginResult = await login(form.email.trim(), form.password);
+      if (loginResult.success) {
+        showToast.success("Email verified. Welcome!");
+        navigate("/dashboard", { replace: true });
+      } else {
+        showToast.success("Email verified. Please sign in.");
+        navigate("/login", { replace: true });
+      }
+    } catch (err) {
+      const msg =
+        err.data?.message ||
+        (err.data?.errors?.otp ? err.data.errors.otp[0] : null) ||
+        err.message ||
+        "Verification failed.";
+      setOtpError(msg);
+      setOtpDigits(["", "", "", "", "", ""]);
+      otpInputRefs.current[0]?.focus();
+    } finally {
+      setVerifyLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0) return;
+    setResendLoading(true);
+    setOtpError("");
+    try {
+      await resendOtp(form.email.trim());
+      setResendCooldown(60);
+      showToast.success("A new code has been sent to your email.");
+    } catch (err) {
+      const msg =
+        err.data?.message ||
+        err.message ||
+        "Failed to resend code. Please try again.";
+      setOtpError(msg);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+
+    // Show password criteria when user types in password field
+    if (name === "password" && value.length > 0) {
+      setShowPasswordCriteria(true);
+    }
 
     // Clear error for this field when user starts typing
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    // Check institutional email format in real-time
+    // Basic email format check in real-time (temporary – allows any domain)
     if (name === "email" && value) {
-      validateInstitutionalEmail(value);
+      validateEmailFormat(value);
+    }
+
+    if (name === "password") {
+      validatePassword(value);
     }
   };
 
-  const validateInstitutionalEmail = (email) => {
-    // Check if email ends with @deped.gov.ph or similar DepEd domains
-    const depedEmailPattern = /^[^\s@]+@deped\.gov\.ph$/i;
+  const validateEmailFormat = (email) => {
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (!depedEmailPattern.test(email)) {
+    if (!emailPattern.test(email)) {
       setFieldErrors((prev) => ({
         ...prev,
-        email: "Please use your institutional DepEd email (@deped.gov.ph)",
+        email: "Please enter a valid email address",
       }));
       return false;
     } else {
       setFieldErrors((prev) => ({ ...prev, email: "" }));
       return true;
     }
+  };
+
+  const validatePassword = (value) => {
+    const validation = {
+      minLength: value.length >= 8,
+      hasLetter: /[A-Za-z]/.test(value),
+      hasNumber: /[0-9]/.test(value),
+    };
+    setPasswordValidation(validation);
+    return validation;
   };
 
   const validateForm = () => {
@@ -103,14 +234,11 @@ const Register = () => {
     }
 
     if (!form.email.trim()) {
-      errors.email = "Please enter your institutional email address";
-    } else {
-      if (!validateInstitutionalEmail(form.email)) {
-        // Error already set in validateInstitutionalEmail
-        errors.email =
-          fieldErrors.email ||
-          "Please use your institutional DepEd email (@deped.gov.ph)";
-      }
+      errors.email = "Please enter your email address";
+    } else if (!validateEmailFormat(form.email)) {
+      // Error already set in validateEmailFormat
+      errors.email =
+        fieldErrors.email || "Please enter a valid email address";
     }
 
     if (!form.employee_id.trim()) {
@@ -129,8 +257,16 @@ const Register = () => {
       errors.school_name = "Please enter your school name";
     }
 
-    if (form.password.length < 8) {
-      errors.password = "Password must be at least 8 characters long";
+    if (!form.password) {
+      errors.password = "Please enter a password";
+    } else {
+      const validation = validatePassword(form.password);
+      const allOk =
+        validation.minLength && validation.hasLetter && validation.hasNumber;
+      if (!allOk) {
+        errors.password =
+          "Password must be at least 8 characters and include a letter and a number.";
+      }
     }
 
     if (form.password !== form.confirmPassword) {
@@ -163,14 +299,12 @@ const Register = () => {
       showAlert.close();
 
       if (result.success) {
-        showAlert.success(
-          "Registration Successful!",
-          result.message || "Check your email for the OTP to verify your account.",
+        showToast.success(
+          result.message || "Check your email for the 6-digit code.",
         );
-        const verifyUrl = result.email
-          ? `/verify-email?email=${encodeURIComponent(result.email)}`
-          : "/verify-email";
-        setTimeout(() => navigate(verifyUrl, { replace: true }), 1500);
+        setStep("otp");
+        setOtpError("");
+        setOtpDigits(["", "", "", "", "", ""]);
       } else {
         showAlert.error("Registration Failed", result.error || "Please try again.");
       }
@@ -226,116 +360,20 @@ const Register = () => {
 
   return (
     <div className="min-vh-100 d-flex flex-column flex-lg-row position-relative">
-      {/* Left Panel - Fixed on large screens */}
-      <div className="col-lg-6 d-none d-lg-flex flex-column justify-content-center align-items-center text-white p-5 position-fixed start-0 top-0 h-100">
-        {/* Background Image with Blur Effect */}
+      {/* Left side – background with subtle TasDoneNa pink overlay */}
+      <div className="col-lg-6 d-none d-lg-block position-fixed start-0 top-0 h-100 p-0">
         <div
-          className="position-absolute top-0 start-0 w-100 h-100"
+          className="w-100 h-100"
           style={{
-            backgroundImage: `url(${LoginBackground})`,
+            backgroundImage: `linear-gradient(rgba(245, 66, 134, 0.30), rgba(213, 50, 111, 0.30)), url(${LoginBackground})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: theme.backgroundLight,
             filter: backgroundLoaded ? "blur(0px)" : "blur(10px)",
             transition: "filter 0.5s ease-in-out",
           }}
         />
-
-        {/* Gradient Overlay */}
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            background: `linear-gradient(rgba(245, 66, 134, 0.85), rgba(213, 50, 111, 0.85))`,
-          }}
-        />
-
-        {/* Content - ALWAYS CLEAR */}
-        <div className="position-relative z-2 d-flex flex-column align-items-center justify-content-center w-100 h-100 px-4">
-          {/* Logo Section */}
-          <div className="text-center mb-4">
-            <div
-              className="d-flex align-items-center justify-content-center mx-auto"
-              style={{
-                width: "fit-content",
-                gap: "0.3rem",
-              }}
-            >
-              {/* Logo Image */}
-              <div
-                className="d-flex align-items-center justify-content-center"
-                style={{
-                  width: "85px",
-                }}
-              >
-                <img
-                  src={Logo}
-                  alt="TasDoneNa Logo"
-                  style={{
-                    width: "100px",
-                    height: "100px",
-                    objectFit: "contain",
-                  }}
-                />
-              </div>
-
-              {/* Text Logo */}
-              <div
-                className="d-flex flex-column justify-content-center align-items-start"
-                style={{
-                  width: "150px",
-                }}
-              >
-                <img
-                  src={TextLogo}
-                  alt="TasDoneNa Text Logo"
-                  style={{
-                    width: "100%",
-                    height: "auto",
-                    objectFit: "contain",
-                    marginBottom: "0.2rem",
-                  }}
-                />
-                <p
-                  className="fw-bolder text-start"
-                  style={{
-                    fontSize: "9px",
-                    color: "white",
-                    margin: 0,
-                    lineHeight: "1.2",
-                  }}
-                >
-                  A To Do List Management System for Public School
-                  Administrative Officers
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Title */}
-          <h4
-            className="fw-bold text-center mb-3"
-            style={{
-              color: "white",
-              fontSize: "1.5rem",
-            }}
-          >
-            TasDoneNa
-          </h4>
-
-          {/* Description */}
-          <p
-            className="text-center mx-auto"
-            style={{
-              fontSize: "15px",
-              maxWidth: "360px",
-              color: "rgba(255,255,255,0.9)",
-              lineHeight: "1.5",
-            }}
-          >
-            Register with your DepEd institutional email to start managing your
-            tasks and productivity. Your account will be activated after admin
-            approval.
-          </p>
-        </div>
       </div>
 
       {/* Right Panel - Scrollable */}
@@ -374,59 +412,46 @@ const Register = () => {
               zIndex: 2,
             }}
           >
-            {/* Mobile Logo - Only show on small screens */}
-            <div className="d-lg-none text-center mb-4">
-              <div className="d-flex align-items-center justify-content-center">
-                <div
-                  className="d-flex align-items-center justify-content-center"
-                  style={{
-                    filter: backgroundLoaded ? "blur(0px)" : "blur(8px)",
-                    opacity: backgroundLoaded ? 1 : 0,
-                    transition: "all 0.6s ease",
-                  }}
-                >
-                  <img
-                    src={Logo}
-                    alt="TasDoneNa Logo"
-                    style={{
-                      width: "90px",
-                      height: "90px",
-                      objectFit: "contain",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Header */}
-            <div className="text-start mb-4">
-              <h1
-                className="fw-bolder mb-2"
-                style={{ color: theme.primary, fontSize: "1.5rem" }}
-              >
-                Create Your Account
-              </h1>
-              <p
-                className="fw-semibold mb-0"
+            {/* Single centered logo above the form (all screen sizes) */}
+            <div className="text-center mb-4">
+              <img
+                src={Logo}
+                alt="TasDoneNa Logo"
                 style={{
-                  lineHeight: "1.4",
-                  fontSize: "0.9rem",
-                  color: theme.textSecondary,
+                  width: "90px",
+                  height: "90px",
+                  objectFit: "contain",
                 }}
+              />
+            </div>
+
+            <div className="register-step-wrapper">
+              <div
+                className={`register-step-slider${step === "otp" ? " step-otp" : ""}`}
               >
-                Register with your DepEd institutional email to access the task
-                management system. Your account will be activated after admin
-                approval.
-              </p>
-            </div>
+                {/* Panel 1: Register form */}
+                <div className="register-step-panel">
+                  <div className="text-center mb-4">
+                    <h1
+                      className="fw-bolder mb-2"
+                      style={{ color: theme.primary, fontSize: "1.5rem" }}
+                    >
+                      Create Your Account
+                    </h1>
+                    <p
+                      className="fw-semibold mb-0"
+                      style={{
+                        lineHeight: "1.4",
+                        fontSize: "0.9rem",
+                        color: theme.textSecondary,
+                      }}
+                    >
+                      Register using your official DepEd institutional email to securely
+                      access the TasDoneNa task management system.
+                    </p>
+                  </div>
 
-            {/* Approval Notice */}
-            <div className="alert alert-info text-center small mb-4">
-              <strong>Note:</strong> Your account requires admin verification.
-              You&apos;ll be able to log in once your account is approved.
-            </div>
-
-            <form onSubmit={handleSubmit}>
+                  <form onSubmit={handleSubmit}>
               {/* Full Name */}
               <div className="mb-3 position-relative">
                 <label
@@ -446,7 +471,7 @@ const Register = () => {
                   <input
                     type="text"
                     name="name"
-                    placeholder="Enter your full name"
+                    placeholder="Full name"
                     value={form.name}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -495,7 +520,7 @@ const Register = () => {
                   <input
                     type="email"
                     name="email"
-                    placeholder="your.name@deped.gov.ph"
+                    placeholder="Institutional email address"
                     value={form.email}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -524,7 +549,7 @@ const Register = () => {
                   </div>
                 )}
                 <div className="form-text small mt-1">
-                  Must be a DepEd institutional email (@deped.gov.ph)
+                  Use your official institutional email address.
                 </div>
               </div>
 
@@ -547,7 +572,7 @@ const Register = () => {
                   <input
                     type="text"
                     name="employee_id"
-                    placeholder="Enter your employee ID"
+                    placeholder="Employee ID"
                     value={form.employee_id}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -598,7 +623,7 @@ const Register = () => {
                   <input
                     type="text"
                     name="position"
-                    placeholder="e.g., Administrative Officer II"
+                    placeholder="Position"
                     value={form.position}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -642,7 +667,7 @@ const Register = () => {
                   <input
                     type="text"
                     name="division"
-                    placeholder="e.g., Division Office"
+                    placeholder="Division / Office"
                     value={form.division}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -686,7 +711,7 @@ const Register = () => {
                   <input
                     type="text"
                     name="school_name"
-                    placeholder="Enter your school name"
+                    placeholder="School name"
                     value={form.school_name}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -730,11 +755,19 @@ const Register = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
-                    placeholder="Enter your password"
+                    placeholder="Password"
                     value={form.password}
                     onChange={handleInputChange}
+                    onFocus={() => setShowPasswordCriteria(true)}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
-                      fieldErrors.password ? "is-invalid" : ""
+                      form.password &&
+                      passwordValidation.minLength &&
+                      passwordValidation.hasLetter &&
+                      passwordValidation.hasNumber
+                        ? "is-valid"
+                        : form.password
+                        ? "is-invalid"
+                        : ""
                     }`}
                     style={{
                       backgroundColor: "var(--input-bg)",
@@ -742,6 +775,7 @@ const Register = () => {
                       borderColor: fieldErrors.password
                         ? "#dc3545"
                         : "var(--input-border)",
+                      transition: "border-color 0.2s ease, box-shadow 0.2s ease",
                     }}
                     required
                     minLength={8}
@@ -770,8 +804,42 @@ const Register = () => {
                     {fieldErrors.password}
                   </div>
                 )}
-                <div className="form-text small mt-1">
-                  Password must be at least 8 characters long
+                <div
+                  className={`password-criteria-wrapper${showPasswordCriteria ? " password-criteria-visible" : ""}`}
+                >
+                  <div className="password-criteria-inner">
+                    <div className="password-criteria-content">
+                      <ul>
+                        <li
+                          className={
+                            passwordValidation.minLength
+                              ? "text-success"
+                              : "text-muted"
+                          }
+                        >
+                          • At least 8 characters
+                        </li>
+                        <li
+                          className={
+                            passwordValidation.hasLetter
+                              ? "text-success"
+                              : "text-muted"
+                          }
+                        >
+                          • Contains a letter
+                        </li>
+                        <li
+                          className={
+                            passwordValidation.hasNumber
+                              ? "text-success"
+                              : "text-muted"
+                          }
+                        >
+                          • Contains a number
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -794,7 +862,7 @@ const Register = () => {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
-                    placeholder="Confirm your password"
+                    placeholder="Confirm password"
                     value={form.confirmPassword}
                     onChange={handleInputChange}
                     className={`form-control border-start-0 ps-2 fw-semibold ${
@@ -840,42 +908,8 @@ const Register = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="btn w-100 fw-semibold d-flex justify-content-center align-items-center position-relative"
+                className="btn-login w-100 py-2 fw-semibold shadow-sm d-flex justify-content-center align-items-center"
                 disabled={isSubmitting}
-                style={{
-                  backgroundColor: theme.primary,
-                  color: "#ffffff",
-                  height: "43px",
-                  borderRadius: "8px",
-                  border: "none",
-                  fontSize: "1rem",
-                  transition: "all 0.3s ease-in-out",
-                  overflow: "hidden",
-                  boxShadow: "0 4px 12px rgba(245, 66, 134, 0.3)",
-                }}
-                onMouseOver={(e) => {
-                  if (!isSubmitting) {
-                    e.target.style.backgroundColor = theme.primaryDark;
-                    e.target.style.transform = "translateY(-2px)";
-                    e.target.style.boxShadow =
-                      "0 6px 20px rgba(245, 66, 134, 0.4)";
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!isSubmitting) {
-                    e.target.style.backgroundColor = theme.primary;
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow =
-                      "0 4px 12px rgba(245, 66, 134, 0.3)";
-                  }
-                }}
-                onMouseDown={(e) => {
-                  if (!isSubmitting) {
-                    e.target.style.transform = "translateY(0)";
-                    e.target.style.boxShadow =
-                      "0 2px 6px rgba(245, 66, 134, 0.3)";
-                  }
-                }}
               >
                 {isSubmitting ? (
                   <>
@@ -897,15 +931,131 @@ const Register = () => {
                 }}
               >
                 Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="fw-bold login-register-link"
-                  style={{ color: theme.primary }}
-                >
+                <Link to="/login" className="fw-bold tas-auth-link">
                   Sign in here
                 </Link>
               </p>
             </form>
+                </div>
+
+                {/* Panel 2: OTP verification (reference-style, same page) */}
+                <div className="register-step-panel">
+                  <button
+                    type="button"
+                    className="register-otp-back-btn btn btn-link p-0 mb-3 small d-inline-flex align-items-center"
+                    style={{ fontSize: "0.9rem" }}
+                    onClick={() => {
+                      setStep("form");
+                      setOtpError("");
+                      setOtpDigits(["", "", "", "", "", ""]);
+                    }}
+                  >
+                    <FaArrowLeft className="me-1" style={{ fontSize: "0.85rem" }} />
+                    Back to sign up
+                  </button>
+
+                  <h5
+                    className="fw-bolder mb-2"
+                    style={{ color: theme.textPrimary, fontSize: "1.25rem" }}
+                  >
+                    Verify your email
+                  </h5>
+                  <p
+                    className="small mb-4"
+                    style={{ color: theme.textSecondary, lineHeight: 1.4 }}
+                  >
+                    Enter the 6-digit code we sent to{" "}
+                    <span className="fw-semibold" style={{ color: theme.textPrimary }}>
+                      {form.email || "your email"}
+                    </span>
+                    .
+                  </p>
+
+                  <form onSubmit={handleOtpVerify}>
+                    <div
+                      className="d-flex justify-content-between gap-1 mb-3"
+                      style={{ gap: "0.35rem" }}
+                    >
+                      {otpDigits.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => (otpInputRefs.current[index] = el)}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) => handleOtpDigitChange(index, e.target.value)}
+                          onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                          onPaste={index === 0 ? handleOtpPaste : undefined}
+                          className="form-control text-center fw-bold"
+                          style={{
+                            width: "clamp(36px, 10vw, 48px)",
+                            height: "48px",
+                            fontSize: "1.25rem",
+                            border: otpError ? "2px solid #dc3545" : `2px solid ${theme.borderColor}`,
+                            borderRadius: "8px",
+                            transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.borderColor = theme.primary;
+                            e.target.style.boxShadow = "0 0 0 3px rgba(245, 66, 134, 0.25)";
+                          }}
+                          onBlur={(e) => {
+                            e.target.style.borderColor = otpError ? "#dc3545" : theme.borderColor;
+                            e.target.style.boxShadow = "none";
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {otpError && (
+                      <div className="small text-danger mb-2">{otpError}</div>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="btn w-100 fw-semibold py-2 mb-2 rounded-3 register-otp-verify-btn"
+                      style={{
+                        backgroundColor: theme.primary,
+                        color: "#fff",
+                        border: "none",
+                        boxShadow: "0 4px 12px rgba(245, 66, 134, 0.3)",
+                      }}
+                      disabled={verifyLoading}
+                    >
+                      {verifyLoading ? (
+                        <>
+                          <FaSpinner className="me-2 spinner" />
+                          Verifying...
+                        </>
+                      ) : (
+                        "Verify email"
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary w-100 py-2 rounded-3 register-otp-resend-btn"
+                      onClick={handleResendOtp}
+                      disabled={resendLoading || resendCooldown > 0}
+                    >
+                      {resendLoading
+                        ? "Sending..."
+                        : resendCooldown > 0
+                          ? `Resend in ${resendCooldown}s`
+                          : "Resend code"}
+                    </button>
+                  </form>
+
+                  <p className="text-center mt-3 mb-0 small" style={{ color: theme.textSecondary }}>
+                    Already have an account?{" "}
+                    <Link to="/login" className="fw-bold register-otp-signin-link">
+                      Sign in
+                    </Link>
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
