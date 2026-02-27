@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Swal from "sweetalert2";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
-import { FaClipboardList, FaSearch, FaEye, FaUserCheck, FaUserTimes, FaUsers, FaCheckCircle, FaPauseCircle, FaTimesCircle } from "react-icons/fa";
+import { FaClipboardList, FaSearch, FaEye, FaUserCheck, FaUserTimes, FaUsers, FaCheckCircle, FaPauseCircle, FaTimesCircle, FaTrash } from "react-icons/fa";
 import Portal from "../../components/Portal.jsx";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -55,6 +55,9 @@ const Officers = () => {
   const [deactivateOfficer, setDeactivateOfficer] = useState(null);
   const [deactivateReason, setDeactivateReason] = useState("");
   const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
+  const [deleteOfficer, setDeleteOfficer] = useState(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deleteModalClosing, setDeleteModalClosing] = useState(false);
   const [fullAmountModal, setFullAmountModal] = useState(null);
   const [fullAmountModalClosing, setFullAmountModalClosing] = useState(false);
 
@@ -304,6 +307,42 @@ const Officers = () => {
       showAlert.error(
         "Error",
         err.data?.message || err.message || "Failed to activate personnel."
+      );
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const openDeleteModal = (officer) => {
+    setDeleteOfficer(officer);
+    setDeleteConfirmText("");
+    setDeleteModalClosing(false);
+  };
+
+  const closeDeleteModal = () => {
+    if (!deleteOfficer || actionLoading !== null) return;
+    setDeleteModalClosing(true);
+    setTimeout(() => {
+      setDeleteOfficer(null);
+      setDeleteConfirmText("");
+      setDeleteModalClosing(false);
+    }, 200);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteOfficer || actionLoading !== null || deleteConfirmText !== "DELETE") return;
+
+    setActionLoading(deleteOfficer.id);
+    try {
+      await api.delete(`/admin/users/${deleteOfficer.id}`);
+      showToast.success("Personnel removed from directory.");
+      setDeleteOfficer(null);
+      setDeleteConfirmText("");
+      await fetchOfficers();
+    } catch (err) {
+      showAlert.error(
+        "Error",
+        err.data?.message || err.message || "Failed to remove personnel."
       );
     } finally {
       setActionLoading(null);
@@ -653,20 +692,36 @@ const Officers = () => {
                               <FaEye aria-hidden />
                             </button>
                             {o.status === "rejected" && (
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-success account-approvals-btn-icon"
-                                onClick={() => openReapproveModal(o)}
-                                disabled={actionLoading !== null}
-                                title="Approve"
-                                aria-label="Approve"
-                              >
-                                {actionLoading === o.id ? (
-                                  <span className="spinner-border spinner-border-sm" aria-hidden />
-                                ) : (
-                                  <FaUserCheck aria-hidden />
-                                )}
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success account-approvals-btn-icon"
+                                  onClick={() => openReapproveModal(o)}
+                                  disabled={actionLoading !== null}
+                                  title="Approve"
+                                  aria-label="Approve"
+                                >
+                                  {actionLoading === o.id ? (
+                                    <span className="spinner-border spinner-border-sm" aria-hidden />
+                                  ) : (
+                                    <FaUserCheck aria-hidden />
+                                  )}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger account-approvals-btn-icon"
+                                  onClick={() => openDeleteModal(o)}
+                                  disabled={actionLoading !== null}
+                                  title="Remove from directory"
+                                  aria-label="Remove from directory"
+                                >
+                                  {actionLoading === o.id ? (
+                                    <span className="spinner-border spinner-border-sm" aria-hidden />
+                                  ) : (
+                                    <FaTrash aria-hidden />
+                                  )}
+                                </button>
+                              </>
                             )}
                             {o.status === "approved" && (
                               o.is_active ? (
@@ -987,6 +1042,92 @@ const Officers = () => {
                     </>
                   ) : (
                     "Approve personnel"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Delete modal – for rejected personnel with no activity */}
+      {deleteOfficer && (
+        <Portal>
+          <div
+            className="account-approvals-detail-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-officer-title"
+          >
+            <div
+              className={`account-approvals-detail-backdrop modal-backdrop-animation${deleteModalClosing ? " exit" : ""}`}
+              onClick={closeDeleteModal}
+              aria-hidden
+            />
+            <div className={`account-approvals-detail-modal modal-content-animation${deleteModalClosing ? " exit" : ""}`}>
+              <div className="account-approvals-detail-header">
+                <div className="account-approvals-detail-header-text">
+                  <h5 id="delete-officer-title" className="mb-0 fw-semibold">
+                    Remove personnel from directory
+                  </h5>
+                  <div className="account-approvals-detail-subtitle">
+                    <span className="account-approvals-detail-name">{deleteOfficer.name}</span>
+                    {deleteOfficer.email ? (
+                      <span className="account-approvals-detail-email">• {deleteOfficer.email}</span>
+                    ) : null}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close-custom"
+                  onClick={closeDeleteModal}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="account-approvals-detail-body">
+                <p className="account-approvals-action-help">
+                  This will remove this personnel from the directory. Only rejected personnel with no tasks in the system can be removed. This action cannot be undone through the interface.
+                </p>
+                <div className="mb-3">
+                  <label htmlFor="delete-confirm-input" className="account-approvals-action-label">
+                    Type <strong>DELETE</strong> to confirm
+                  </label>
+                  <input
+                    id="delete-confirm-input"
+                    type="text"
+                    className="form-control"
+                    placeholder="Type DELETE to confirm"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    disabled={actionLoading !== null}
+                    autoComplete="off"
+                  />
+                </div>
+              </div>
+              <div className="account-approvals-detail-footer">
+                <button
+                  type="button"
+                  className="btn btn-light account-approvals-detail-close-btn"
+                  onClick={closeDeleteModal}
+                  disabled={actionLoading !== null}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn modal-reject-btn account-approvals-detail-close-btn"
+                  onClick={confirmDelete}
+                  disabled={actionLoading !== null || deleteConfirmText !== "DELETE"}
+                >
+                  {actionLoading === deleteOfficer.id ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" aria-hidden />
+                      <span>Removing…</span>
+                    </>
+                  ) : (
+                    "Remove from directory"
                   )}
                 </button>
               </div>
