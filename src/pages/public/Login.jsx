@@ -7,8 +7,9 @@ import {
   FaEyeSlash,
   FaSpinner,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import { showAlert, showToast } from "../../services/notificationService.js";
+import { showToast } from "../../services/notificationService.js";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
 import TextLogo from "../../assets/logo-text.png";
@@ -44,18 +45,14 @@ const Login = () => {
     e.preventDefault();
 
     if (!form.email || !form.password) {
-      showAlert.error("Validation Error", "Please fill in all fields");
+      showToast.error("Please fill in all fields");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      showAlert.loading("Signing you in...");
-
       const result = await login(form.email, form.password);
-
-      showAlert.close();
 
       if (result.success) {
         showToast.success(`Welcome back, ${result.user.name}!`);
@@ -64,15 +61,27 @@ const Login = () => {
           navigate("/dashboard");
         }, 1500);
       } else {
-        showAlert.error(
-          "Login Failed",
-          result.error || "Invalid credentials.",
-        );
+        const status = result.status;
+        const errText = (result.error || "").toLowerCase();
+        const isRejected = status === "rejected" || errText.includes("rejected");
+        const isDeactivated = status === "deactivated" || errText.includes("deactivated");
+
+        if (isRejected || isDeactivated) {
+          await Swal.fire({
+            title: isRejected ? "Account rejected" : "Account deactivated",
+            html: `<p class="mb-0">${result.error || (isRejected ? "Your account has been rejected and you cannot sign in." : "Your account has been deactivated and you cannot sign in.")}</p>`,
+            icon: "error",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#f54286",
+            allowOutsideClick: false,
+            customClass: { popup: "login-status-popup", title: "login-status-title" },
+          });
+        } else {
+          showToast.error(result.error || "Invalid credentials.");
+        }
       }
     } catch (error) {
-      showAlert.close();
-      showAlert.error(
-        "Connection Error",
+      showToast.error(
         "Unable to connect to the server. Please check your internet connection and try again.",
       );
       console.error("Login error:", error);
@@ -144,7 +153,7 @@ const Login = () => {
                 style={{ color: theme.primary }}
               >
                 A To Do List Management System for Public School Administrative
-                Officers
+                Personnel
               </p>
             </div>
           </div>

@@ -1,55 +1,132 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
 @import "bootstrap/dist/css/bootstrap.min.css";
 
-:root {
- /* Aurora Navy Color Scheme */
- --primary-color: #0c203f; /* Deep navy */
- --primary-dark: #050f23; /* Darker navy */
- --primary-light: #1f3e6d; /* Lighter navy accent */
- --accent-color: #f0b429; /* Warm gold */
- --accent-light: #ffd866; /* Soft gold */
+  :root {
+    /* TasDoneNa – light corporate / government style (professional, not dark) */
+    --primary-color: #1e3a5f;      /* Dignified blue (primary actions) */
+    --primary-dark: #152a45;
+    --primary-light: #2c5282;
+    --accent-color: #f54286;       /* TasDoneNa brand pink (logo, active nav) */
+    --accent-light: #ff6fa5;
 
- /* Topbar Colors */
- --topbar-bg: linear-gradient(
- 135deg,
- var(--primary-dark) 0%,
- var(--primary-color) 100%
- );
- --topbar-text: #ffffff;
- --topbar-hover: rgba(255, 255, 255, 0.12);
- --topbar-shadow: rgba(12, 32, 63, 0.35);
+    /* Topbar – light, dark text */
+    --topbar-bg: #ffffff;
+    --topbar-text: #1a202c;
+    --topbar-hover: rgba(30, 58, 95, 0.06);
+    --topbar-shadow: rgba(0, 0, 0, 0.06);
 
- /* Sidebar Colors */
- --sidebar-bg: linear-gradient(180deg, #060d1a 0%, #0f1c36 100%);
- --sidebar-dark: #040812;
- --sidebar-text: #f4f7fb;
- --sidebar-hover: rgba(240, 180, 41, 0.12);
- --sidebar-active: var(--accent-color);
- --sidebar-border: rgba(240, 180, 41, 0.25);
- --sidebar-shadow: rgba(0, 0, 0, 0.25);
+    /* Sidebar – light, same as topbar feel */
+    --sidebar-bg: #f7f8fa;
+    --sidebar-dark: #eef1f5;
+    --sidebar-text: #2d3748;
+    --sidebar-hover: rgba(245, 66, 134, 0.08);
+    --sidebar-active: var(--accent-color);
+    --sidebar-border: #e2e8f0;
+    --sidebar-shadow: rgba(0, 0, 0, 0.04);
 
- /* Footer Colors - light blue shade, text unchanged for clarity */
- --footer-bg: #e4ecf7;
- --footer-border: #c5d4eb;
- --footer-text: #4a566d;
+    /* Footer – ties to scheme: soft blue–pink tint, accent top edge */
+    --footer-bg: #f0f2f5;
+    --footer-bg-start: #eef2f8;
+    --footer-bg-end: #f5f0f4;
+    --footer-border: #e2e8f0;
+    --footer-accent: rgba(245, 66, 134, 0.22);
+    --footer-text: #4a5568;
+    --sidebar-active-text: #ffffff;  /* text on pink active item */
 
- /* Neutral Colors */
- --text-primary: #10172b;
- --text-secondary: #4c5875;
- --text-muted: #6b738a;
- --background-light: #f5f7fb;
- --background-white: #ffffff;
- --border-color: #d5dbe6;
+    /* Neutral Colors */
+    --text-primary: #1a202c;
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --background-light: #f5f7fb;
+    --background-white: #ffffff;
+    --border-color: #e2e8f0;
 
- /* Button Colors */
- --btn-primary-bg: var(--primary-color);
- --btn-primary-hover: var(--primary-dark);
- --btn-primary-text: #ffffff;
+    /* Button Colors */
+    --btn-primary-bg: var(--primary-color);
+    --btn-primary-hover: var(--primary-dark);
+    --btn-primary-text: #ffffff;
 
- /* Input Colors */
- --input-bg: #ffffff;
- --input-text: var(--text-primary);
- --input-border: #d5dbe6;
+    /* Input Colors */
+    --input-bg: #ffffff;
+    --input-text: var(--text-primary);
+    --input-border: #e2e8f0;
+  }
+
+/* Page header (title + Refresh/Create buttons) – responsive on mobile */
+@media (max-width: 576px) {
+  .account-approvals-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .account-approvals-page-header .account-approvals-page-title {
+    margin-bottom: 0;
+    font-size: 1.1rem !important;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .account-approvals-page-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+  }
+  .account-approvals-page-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    width: 100%;
+  }
+  .account-approvals-page-actions .btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .account-approvals-page-header > button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .task-form-actions {
+    flex-direction: column;
+  }
+  .task-form-actions .btn {
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+  }
+}
+
+/* Filter panel – label above input on mobile for better alignment */
+@media (max-width: 576px) {
+  .account-approvals-filter-row .d-flex.align-items-center.gap-2 {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.25rem;
+  }
+  .account-approvals-filter-row .d-flex.align-items-center.gap-2 label {
+    margin-bottom: 0;
+  }
+  .account-approvals-filter-row .form-select-sm,
+  .account-approvals-filter-row .form-control-sm {
+    max-width: 100% !important;
+    width: 100%;
+  }
+}
+
+/* Container + card – less padding on mobile for more content space */
+@media (max-width: 576px) {
+  .container-fluid.px-3.px-md-4,
+  .container-fluid {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  .account-approvals-card-header {
+    padding: 0.75rem 1rem;
+  }
 }
 
 /* ===== TasDoneNa AUTH PAGES (login / register / verify) ===== */
@@ -65,15 +142,14 @@
 }
 
 .btn-login:hover {
-  /* Darker pink on hover, same feel as register */
   background-color: #d5326f !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 66, 134, 0.35);
+  box-shadow: none;
 }
 
 .btn-login:active {
   transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(245, 66, 134, 0.35);
+  box-shadow: none;
 }
 
 .btn-login:disabled {
@@ -204,6 +280,16 @@ a.tas-auth-link:hover {
   transform: translateY(-1px);           /* tiny lift for better UX */
 }
 
+/* Rejected / deactivated login modal – very visible */
+.login-status-popup {
+  border: 2px solid #dc3545;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2);
+}
+.login-status-title {
+  color: #b91c1c !important;
+  font-weight: 700 !important;
+}
+
 a.tas-auth-link::after {
   content: "";
   position: absolute;
@@ -283,24 +369,32 @@ a.tas-auth-link:hover::after {
   min-width: 0;
 }
 
+/* Same look and hover as Create Account (.btn-login): no glow, smooth transition */
 .register-otp-verify-btn {
+  background-color: #f54286 !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px;
+  box-shadow: none;
   transform: translateY(0);
-  transition:
-    background-color 0.25s ease,
-    transform 0.25s ease,
-    box-shadow 0.25s ease;
+  transition: all 0.3s ease-in-out;
 }
 
 .register-otp-verify-btn:hover:not(:disabled) {
-  background-color: #f54286 !important;
+  background-color: #d5326f !important;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(245, 66, 134, 0.35);
+  box-shadow: none;
 }
 
 .register-otp-verify-btn:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 2px 10px rgba(245, 66, 134, 0.3);
   transition-duration: 0.15s;
+}
+
+.register-otp-verify-btn:disabled {
+  opacity: 0.7;
+  transform: none;
+  cursor: not-allowed;
 }
 
 .register-otp-resend-btn,
@@ -352,19 +446,24 @@ a.tas-auth-link:hover::after {
   width: 100%;
 }
 
-.register-otp-back-btn {
-  color: #6b7280;
-  transition:
-    color 0.25s ease,
-    transform 0.25s ease;
-  text-decoration: none;
-  border: none;
-  background: none;
+/* Back to sign up: no blue, grey → pink with smooth transition */
+button.register-otp-back-btn,
+.btn-link.register-otp-back-btn,
+.register-otp-back-btn,
+.register-otp-back-btn:link,
+.register-otp-back-btn:visited,
+.register-otp-back-btn:focus,
+.register-otp-back-btn:active {
+  color: #6b7280 !important;
+  text-decoration: none !important;
+  border: none !important;
+  background: none !important;
   cursor: pointer;
+  transition: color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
 
 .register-otp-back-btn:hover {
-  color: #f54286;
+  color: #f54286 !important;
   transform: translateX(-2px);
 }
 
@@ -411,17 +510,29 @@ label {
 
 /* ===== TOPBAR STYLES ===== */
 .sb-topnav {
- background: var(--topbar-bg) !important;
- border-bottom: none !important;
- box-shadow: 0 4px 20px var(--topbar-shadow);
- z-index: 1050;
- position: fixed;
- top: 0;
- right: 0;
- left: 0;
- height: 60px;
- padding-left: 0;
- padding-right: 1rem;
+  background: var(--topbar-bg) !important;
+  border-bottom: none !important;
+  box-shadow: 0 4px 20px var(--topbar-shadow);
+  z-index: 1050;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 60px;
+  padding-left: 0;
+  padding-right: 1rem;
+  color: var(--topbar-text) !important;
+  overflow: visible !important;
+}
+.sb-topnav .navbar-brand,
+.sb-topnav .btn-link,
+.sb-topnav .nav-link,
+.sb-topnav .d-flex.small {
+ color: var(--topbar-text) !important;
+}
+.sb-topnav .btn-link:hover {
+ color: var(--primary-color) !important;
+ background-color: var(--topbar-hover) !important;
 }
 
 /* Match sidebar left spacing exactly: .sb-sidenav-menu-heading and .sb-sidenav .nav-link use 1.5rem */
@@ -432,13 +543,47 @@ label {
  margin-left: 0 !important;
 }
 
-/* Topbar dropdowns must appear above sidebar (sidebar z-index 1038) */
+/* Topbar logos: icon fixed size, text logo responsive (visible on all screens) */
+.sb-topnav .topbar-icon-logo {
+ height: 34px;
+ width: 34px;
+ object-fit: contain;
+ flex-shrink: 0;
+}
+
+.sb-topnav .topbar-text-logo {
+ height: auto;
+ max-height: 20px;
+ width: auto;
+ object-fit: contain;
+ flex-shrink: 0;
+ min-width: 0;
+}
+
+@media (min-width: 576px) {
+ .sb-topnav .topbar-text-logo {
+  max-height: 24px;
+ }
+}
+
+@media (min-width: 992px) {
+ .sb-topnav .topbar-text-logo {
+  max-height: 26px;
+ }
+}
+
+/* Topbar dropdowns must appear above sidebar (sidebar z-index 1038); never clip height */
 .sb-topnav .dropdown-menu {
- z-index: 10050 !important;
- background-color: #fff !important;
- color: #212529 !important;
- border: 1px solid #e0e0e0 !important;
- box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  z-index: 10050 !important;
+  background-color: #fff !important;
+  color: #212529 !important;
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+.sb-topnav .navbar-nav .nav-item.dropdown {
+  overflow: visible !important;
 }
 
 .sb-topnav .navbar-brand {
@@ -518,7 +663,7 @@ label {
  background-color: var(--accent-color) !important;
  border-color: var(--accent-color);
  transform: translateY(-1px);
- box-shadow: 0 4px 12px rgba(51, 108, 53, 0.3);
+ box-shadow: 0 4px 12px rgba(245, 66, 134, 0.35);
 }
 
 .sb-topnav .nav-link {
@@ -579,18 +724,18 @@ label {
 
 .sb-topnav .account-switcher-dropdown .dropdown-item:hover {
  background-color: rgba(12, 32, 63, 0.04) !important;
- color: #0c203f !important;
+ color: var(--primary-color) !important;
 }
 
 /* Selected account – subtle blue tint, no yellow, no borders */
 .sb-topnav .account-switcher-dropdown .account-switcher-item.active {
  background-color: rgba(12, 32, 63, 0.07) !important;
- color: #0c203f !important;
+ color: var(--primary-color) !important;
  box-shadow: none;
 }
 
 .sb-topnav .account-switcher-dropdown .account-switcher-item.active .fw-semibold {
- color: #0c203f !important;
+ color: var(--primary-color) !important;
 }
 
 /* Account name: full on large screens, ellipsis on mobile when too long */
@@ -659,6 +804,266 @@ label {
  font-size: 0.875rem;
 }
 
+/* Topbar user dropdown (CPC-style): person icon + panel with smooth transition */
+.sb-topnav .dropdown-header {
+ color: var(--text-primary);
+ font-weight: 600;
+ font-size: 0.875rem;
+}
+
+/* Topbar user dropdown (match CPC reference) */
+.custom-dropdown-item {
+ background: none;
+ border: none;
+ width: 100%;
+ text-align: left;
+ cursor: pointer;
+ padding: 0.375rem 1rem;
+ color: #212529;
+ transition: all 0.15s ease-in-out;
+}
+
+.custom-dropdown-item:hover,
+.custom-dropdown-item:focus {
+ background-color: #f8f9fa;
+ color: #16181b;
+ outline: none;
+}
+
+.logout-item {
+ color: #dc3545 !important;
+}
+
+.logout-item:hover,
+.logout-item:focus {
+ background-color: rgba(220, 53, 69, 0.1) !important;
+ color: #dc3545 !important;
+ outline: none;
+}
+
+.dropdown-menu .custom-dropdown-item {
+ display: block;
+ clear: both;
+ font-weight: 400;
+ text-decoration: none;
+ white-space: nowrap;
+ border: 0;
+}
+
+.dropdown-menu {
+ border: 1px solid rgba(0, 0, 0, 0.15);
+ border-radius: 0.375rem;
+ box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Account & User dropdowns - above sidebar */
+.topbar-dropdown-menu,
+.account-switcher-dropdown,
+.user-dropdown-menu {
+ z-index: 10050 !important;
+ background-color: #ffffff !important;
+ border: 1px solid #e0e0e0 !important;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12) !important;
+}
+
+.user-dropdown-menu .dropdown-header,
+.user-dropdown-menu .custom-dropdown-item {
+ color: #212529 !important;
+}
+
+.user-dropdown-menu .dropdown-header .text-muted {
+ color: #6c757d !important;
+}
+
+/* User dropdown: always responsive – cap width, truncate long text, never clip height */
+.user-dropdown-menu {
+  max-width: min(320px, calc(100vw - 2rem)) !important;
+  overflow: visible !important;
+  max-height: none !important;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+/* Portaled user dropdown: never clipped, no scroll (nuclear) */
+.user-dropdown-portal-wrap {
+  overflow: visible !important;
+  max-height: none !important;
+}
+[data-user-dropdown="true"],
+ul.user-dropdown-portal-menu {
+  max-height: none !important;
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+.user-dropdown-portal-menu {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 0ms linear 180ms;
+}
+.user-dropdown-portal-menu.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 0ms linear 0ms;
+}
+.user-dropdown-portal-menu.is-closing {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 180ms ease, transform 180ms ease, visibility 0ms linear 180ms;
+}
+.user-dropdown-portal-menu .dropdown-header,
+.user-dropdown-portal-menu .custom-dropdown-item {
+  color: #212529 !important;
+}
+.user-dropdown-portal-menu .dropdown-header .text-muted {
+  color: #6c757d !important;
+}
+.user-dropdown-portal-menu .user-dropdown-header {
+  padding: 0.5rem 1rem 0.35rem !important;
+}
+.user-dropdown-portal-menu .user-dropdown-name,
+.user-dropdown-portal-menu .user-dropdown-email,
+.user-dropdown-portal-menu .user-dropdown-role {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+/* Logout and dropdown items: full width of menu, hover fills row (old structure) */
+.user-dropdown-portal-menu .dropdown-item,
+.user-dropdown-portal-menu .custom-dropdown-item {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0.75rem 1rem !important;
+  text-align: left;
+  border-radius: 0;
+  box-sizing: border-box;
+}
+.user-dropdown-portal-menu .logout-item:hover,
+.user-dropdown-portal-menu .logout-item:focus {
+  background-color: rgba(220, 53, 69, 0.1) !important;
+  color: #dc3545 !important;
+}
+.user-dropdown-portal-menu .custom-dropdown-item:not(.logout-item):hover,
+.user-dropdown-portal-menu .custom-dropdown-item:not(.logout-item):focus {
+  background-color: rgba(15, 28, 54, 0.06) !important;
+  color: var(--primary-color) !important;
+}
+
+.user-dropdown-header {
+  padding: 0.5rem 1rem 0.35rem !important;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.user-dropdown-name,
+.user-dropdown-email,
+.user-dropdown-role {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.account-switcher-item {
+ color: #212529 !important;
+}
+
+.account-switcher-item:hover {
+ background-color: #f8f9fa !important;
+ color: #212529 !important;
+}
+
+.account-switcher-item.active,
+.account-switcher-item.active:hover {
+ background-color: #0c203f !important;
+ color: #ffffff !important;
+}
+
+/* Smooth dropdown open/close animation (Topbar only) */
+.topbar-dropdown-menu {
+ opacity: 0;
+ visibility: hidden;
+ pointer-events: none;
+ transform-origin: top right;
+ transform: translateY(4px);
+ transition: opacity 180ms ease, transform 180ms ease,
+  visibility 0ms linear 180ms;
+ will-change: opacity, transform;
+ z-index: 10050 !important;
+}
+
+.topbar-dropdown-menu.is-open {
+ opacity: 1;
+ visibility: visible;
+ pointer-events: auto;
+ transform: translateY(0);
+ transition: opacity 180ms ease, transform 180ms ease,
+  visibility 0ms linear 0ms;
+}
+
+.topbar-dropdown-menu.is-closing {
+ opacity: 0;
+ visibility: hidden;
+ pointer-events: none;
+ transform: translateY(4px);
+ transition: opacity 180ms ease, transform 180ms ease,
+  visibility 0ms linear 180ms;
+}
+
+/* Keep dropdown in viewport on tablet and mobile (fixed position, right-aligned) */
+@media (max-width: 992px) {
+ .topbar-dropdown-menu.user-dropdown-menu {
+  position: fixed !important;
+  left: auto !important;
+  right: 0.75rem !important;
+  top: 4.25rem !important;
+  width: auto !important;
+  min-width: 200px !important;
+  max-width: calc(100vw - 1.5rem) !important;
+ }
+}
+
+@media (max-width: 576px) {
+ .topbar-dropdown-menu {
+  position: fixed !important;
+  left: auto !important;
+  right: 0.75rem !important;
+  top: 4.25rem !important;
+  width: auto !important;
+  max-width: calc(100vw - 1.5rem) !important;
+ }
+
+ .dropdown-menu .custom-dropdown-item,
+ .dropdown-header {
+  white-space: normal;
+ }
+
+ .user-dropdown-name,
+ .user-dropdown-email {
+  white-space: normal;
+  word-break: break-word;
+ }
+}
+
+@media (prefers-reduced-motion: reduce) {
+ .topbar-dropdown-menu,
+ .topbar-dropdown-menu.is-open,
+ .topbar-dropdown-menu.is-closing {
+  transition: none;
+  transform: none;
+ }
+}
+
+.dropdown-menu .custom-dropdown-item:active {
+ background-color: #0d6efd;
+ color: white;
+}
+
 /* ===== SIDEBAR STYLES ===== */
 .sb-sidenav {
  width: 250px;
@@ -685,7 +1090,7 @@ label {
 }
 
 .sb-sidenav-menu-heading {
- color: rgba(240, 247, 240, 0.7) !important;
+ color: var(--text-muted) !important;
  font-size: 0.75rem;
  font-weight: 600;
  text-transform: uppercase;
@@ -718,25 +1123,25 @@ label {
 
 .sb-sidenav .nav-link:hover {
  background-color: var(--sidebar-hover);
- color: var(--sidebar-text) !important;
- border-left-color: var(--primary-light);
+ color: var(--accent-color) !important;
+ border-left-color: var(--accent-color);
  transform: translateX(4px);
 }
 
 .sb-sidenav .nav-link.active {
  background: linear-gradient(
- 135deg,
- var(--primary-light) 0%,
- var(--accent-color) 100%
+  135deg,
+  var(--primary-light) 0%,
+  var(--accent-color) 100%
  );
- border-left-color: var(--sidebar-text);
- color: var(--sidebar-text) !important;
- box-shadow: 0 4px 12px rgba(51, 108, 53, 0.3);
+ border-left-color: var(--accent-color);
+ color: var(--sidebar-active-text) !important;
+ box-shadow: 0 2px 8px rgba(245, 66, 134, 0.25);
  font-weight: 600;
 }
 
 .sb-nav-link-icon {
- color: rgba(240, 247, 240, 0.8) !important;
+ color: var(--text-secondary) !important;
  width: 1.5rem;
  text-align: center;
  margin-right: 0.75rem;
@@ -745,15 +1150,65 @@ label {
  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
-.sb-sidenav .nav-link:hover .sb-nav-link-icon,
-.sb-sidenav .nav-link.active .sb-nav-link-icon {
- color: var(--sidebar-text) !important;
+.sb-sidenav .nav-link:hover .sb-nav-link-icon {
+ color: var(--accent-color) !important;
  transform: scale(1.1);
+}
+.sb-sidenav .nav-link.active .sb-nav-link-icon {
+ color: var(--sidebar-active-text) !important;
+ transform: scale(1.1);
+}
+
+/* Sidebar link with badge – single line, label truncates with ... */
+.sb-sidebar-link-with-badge {
+ min-width: 0;
+ gap: 0.5rem;
+}
+
+.sb-sidebar-link-with-badge .sb-sidebar-nav-link-text {
+ min-width: 0;
+ overflow: hidden;
+ flex: 1;
+}
+
+.sb-sidebar-link-with-badge .sb-sidebar-nav-link-label {
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+ display: block;
+ min-width: 0;
+}
+
+/* Sidebar badge – always visible, pending count */
+.sb-sidebar-badge-approvals {
+ font-size: 0.7rem;
+ font-weight: 600;
+ min-width: 1.25rem;
+ padding: 0.2rem 0.45rem;
+ background: var(--accent-color) !important;
+ color: var(--sidebar-active-text) !important;
+ border: none;
+ flex-shrink: 0;
+}
+
+.sb-sidenav .nav-link.active .sb-sidebar-badge-approvals {
+ background: rgba(255, 255, 255, 0.25) !important;
+ color: var(--sidebar-active-text) !important;
+}
+
+.sb-sidenav .nav-link:hover:not(.active) .sb-sidebar-badge-approvals {
+ background: var(--accent-color) !important;
+ color: var(--sidebar-active-text) !important;
+}
+
+/* When count is 0, badge stays visible but subtle */
+.sb-sidenav .sb-sidebar-badge-approvals[aria-label="0 pending"] {
+ opacity: 0.85;
 }
 
 /* Parent/child sidebar – match reference repo (AJCreativeStudio-client) */
 .sb-sidenav-collapse-arrow {
- color: rgba(240, 247, 240, 0.7) !important;
+ color: var(--text-muted) !important;
  margin-left: auto;
  font-size: 0.75rem;
  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -779,29 +1234,29 @@ label {
 .sb-sidenav .nav-link.nav-link-parent.active,
 .sb-sidenav .nav-link[href="#"].active {
  background: transparent !important;
- border-left-color: rgba(245, 245, 245, 0.2) !important;
+ border-left-color: var(--sidebar-border) !important;
  color: var(--sidebar-text) !important;
  box-shadow: none !important;
 }
 
 .sb-sidenav .nav-link.nav-link-parent.has-active-child {
- background: rgba(245, 245, 245, 0.06) !important;
- border-left-color: rgba(240, 180, 41, 0.5) !important;
+ background: var(--sidebar-hover) !important;
+ border-left-color: rgba(245, 66, 134, 0.5) !important;
  color: var(--sidebar-text) !important;
  font-weight: 500;
  box-shadow: none !important;
 }
 
-.sb-sidenav .nav-link.nav-link-parent.has-active-child .sb-nav-link-icon,
-.sb-sidenav
- .nav-link.nav-link-parent.has-active-child
- .sb-sidenav-collapse-arrow {
- color: rgba(240, 247, 240, 0.9) !important;
+.sb-sidenav .nav-link.nav-link-parent.has-active-child .sb-nav-link-icon {
+ color: var(--accent-color) !important;
+}
+.sb-sidenav .nav-link.nav-link-parent.has-active-child .sb-sidenav-collapse-arrow {
+ color: var(--accent-color) !important;
 }
 
 .sb-sidenav .nav-link[href="#"]:hover .sb-sidenav-collapse-arrow,
 .sb-sidenav .nav-link.nav-link-parent:hover .sb-sidenav-collapse-arrow {
- color: rgba(245, 245, 245, 0.9) !important;
+ color: var(--accent-color) !important;
 }
 
 /* Nested menu – show/hide via .show (reference repo pattern) */
@@ -813,7 +1268,7 @@ label {
  overflow: hidden;
  max-height: 0;
  opacity: 0;
- border-left: 2px solid rgba(245, 245, 245, 0.1);
+ border-left: 2px solid var(--sidebar-border);
  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
  opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
  padding 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -859,12 +1314,12 @@ label {
  width: 4px;
  height: 4px;
  border-radius: 50%;
- background-color: rgba(245, 245, 245, 0.5);
+ background-color: var(--text-muted);
  transition: all 0.2s ease;
 }
 
 .sb-sidenav-menu-nested .nav-link:hover {
- background-color: rgba(240, 180, 41, 0.15);
+ background-color: rgba(245, 66, 134, 0.15);
  border-left-color: var(--accent-color);
  border-right: none;
  padding-left: 2.5rem;
@@ -885,8 +1340,8 @@ label {
 .sb-sidenav-menu-nested .nav-link.active {
  background: linear-gradient(
  90deg,
- rgba(240, 180, 41, 0.25) 0%,
- rgba(240, 180, 41, 0.08) 100%
+rgba(245, 66, 134, 0.25) 0%,
+    rgba(245, 66, 134, 0.08) 100%
  );
  border-left-color: var(--accent-color);
  border-right: none;
@@ -919,7 +1374,7 @@ label {
 }
 
 .sb-sidenav-footer .small {
- color: rgba(240, 247, 240, 0.7) !important;
+ color: var(--text-muted) !important;
  font-size: 0.75rem;
  margin-bottom: 0.25rem;
 }
@@ -1047,13 +1502,18 @@ main {
  padding: 0 1.5rem;
 }
 
-/* Footer Styles - Enhanced with distinct appearance */
+/* Footer Styles – scheme-related gradient + soft accent line */
 footer.bg-light {
- background-color: var(--footer-bg) !important;
- border-top: 2px solid var(--footer-border);
+ background: linear-gradient(
+  145deg,
+  var(--footer-bg-start) 0%,
+  var(--footer-bg) 40%,
+  var(--footer-bg-end) 100%
+ ) !important;
+ border-top: 3px solid var(--footer-accent);
  padding: 1.5rem 0;
  margin-top: auto;
- box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+ box-shadow: 0 -2px 12px rgba(30, 58, 95, 0.06);
 }
 
 footer .text-muted {
@@ -1061,11 +1521,16 @@ footer .text-muted {
  font-size: 0.9rem;
 }
 
-/* Additional footer styling for better visual separation */
+/* Main footer – same gradient and accent */
 footer {
- background-color: var(--footer-bg) !important;
+ background: linear-gradient(
+  145deg,
+  var(--footer-bg-start) 0%,
+  var(--footer-bg) 40%,
+  var(--footer-bg-end) 100%
+ ) !important;
  color: var(--footer-text) !important;
- border-top: 2px solid var(--footer-border);
+ border-top: 3px solid var(--footer-accent);
  padding: 1rem 0;
  margin-top: 3rem;
  position: relative;
@@ -1077,13 +1542,16 @@ footer::before {
  top: 0;
  left: 0;
  right: 0;
- height: 1px;
+ height: 3px;
  background: linear-gradient(
- 90deg,
- transparent 0%,
- var(--footer-border) 50%,
- transparent 100%
+  90deg,
+  transparent 0%,
+  var(--footer-accent) 20%,
+  var(--primary-light) 50%,
+  var(--footer-accent) 80%,
+  transparent 100%
  );
+ opacity: 0.95;
 }
 
 footer .container {
@@ -1093,6 +1561,1226 @@ footer .container {
 footer small {
  color: var(--footer-text) !important;
  opacity: 0.8;
+}
+
+/* ===== Account Approvals page – corporate / government style ===== */
+.account-approvals-page-title {
+ color: var(--text-primary) !important;
+ font-size: 1.35rem;
+ letter-spacing: -0.02em;
+}
+
+.account-approvals-page-icon {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ width: 2rem;
+ height: 2rem;
+ border-radius: 8px;
+ background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-color) 100%);
+ color: var(--sidebar-active-text);
+ font-size: 1.1rem;
+ flex-shrink: 0;
+}
+
+.account-approvals-card {
+ border-radius: 10px;
+ overflow: hidden;
+}
+
+.account-approvals-card-header {
+ padding: 1rem 1.25rem;
+}
+
+.account-approvals-card-title {
+ color: var(--text-primary) !important;
+ font-size: 1rem;
+}
+
+/* Search panel – corporate style, responsive (only this block; no sidebar/footer changes) */
+.account-approvals-filter-panel {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: #f8f9fa;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.account-approvals-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.account-approvals-search-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+  flex-shrink: 0;
+  line-height: 2.25rem;
+}
+
+.account-approvals-search-wrap {
+  display: flex;
+  align-items: center;
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 100%;
+  height: 2.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--background-white);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.account-approvals-search-wrap:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.12);
+}
+
+.account-approvals-search-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.25rem;
+  min-width: 2.25rem;
+  height: 100%;
+  color: var(--text-muted);
+  border-radius: 6px 0 0 6px;
+}
+
+.account-approvals-search-icon {
+  font-size: 0.8125rem;
+}
+
+.account-approvals-search-input-wrap {
+  position: relative;
+  flex: 1 1 6rem;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.account-approvals-search-input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 2rem 0 0.5rem;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  background: transparent;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.account-approvals-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Hide browser’s native clear (x) so only our custom clear button shows */
+.account-approvals-search-input::-webkit-search-cancel-button,
+.account-approvals-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.account-approvals-search-clear {
+  position: absolute;
+  right: 0.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.account-approvals-search-clear:hover {
+  color: var(--primary-color);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.account-approvals-results-text {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .account-approvals-filter-panel {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .account-approvals-filter-row {
+    gap: 0.5rem;
+  }
+
+  .account-approvals-search-wrap {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .account-approvals-filter-panel {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .account-approvals-filter-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.375rem;
+  }
+
+  .account-approvals-search-label {
+    line-height: 1.25;
+    margin-bottom: 0.125rem;
+  }
+
+  .account-approvals-search-wrap {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .account-approvals-results-text {
+    font-size: 0.75rem;
+  }
+}
+
+/* Empty state – no search matches (corporate style) */
+.account-approvals-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid var(--border-color);
+  margin: 0;
+}
+
+.account-approvals-empty-state-icon {
+  width: 3rem;
+  height: 3rem;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-white);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+}
+
+.account-approvals-empty-state-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.375rem;
+}
+
+.account-approvals-empty-state-text {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0 0 1.25rem;
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.account-approvals-empty-state-btn {
+  background: var(--primary-color);
+  color: #fff;
+  border: 1px solid var(--primary-color);
+  border-radius: 6px;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.account-approvals-empty-state-btn:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
+/* Per page + pagination bar – responsive */
+.account-approvals-per-page-select {
+  width: auto;
+  min-width: 4rem;
+  font-size: 0.875rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.account-approvals-pagination-left {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.account-approvals-pagination-left .small.text-muted:first-child {
+  white-space: nowrap;
+}
+
+.account-approvals-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+
+.account-approvals-pagination-nav {
+  flex-shrink: 0;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table: sticky # and Actions columns when horizontal scroll (mobile) */
+.account-approvals-table-wrap {
+ overflow-x: auto;
+ -webkit-overflow-scrolling: touch;
+}
+
+.account-approvals-table {
+ font-size: 0.875rem;
+ table-layout: fixed;
+ width: 100%;
+ min-width: 20rem;
+}
+
+/* Column min-widths so content isn't over-truncated (ellipsis only when truly long) */
+.account-approvals-table th:nth-child(3),
+.account-approvals-table td:nth-child(3) {
+ min-width: 8rem;
+}
+.account-approvals-table th:nth-child(4),
+.account-approvals-table td:nth-child(4) {
+ min-width: 11rem;
+}
+.account-approvals-table th:nth-child(5),
+.account-approvals-table td:nth-child(5) {
+ min-width: 6rem;
+}
+
+.account-approvals-table thead th {
+ white-space: nowrap;
+ padding: 0.6rem 0.65rem;
+ font-weight: 600;
+ color: var(--text-primary);
+ border-bottom: 2px solid var(--border-color);
+ background: var(--sidebar-bg) !important;
+}
+
+.account-approvals-table tbody tr {
+ height: 3.25rem;
+}
+
+.account-approvals-table tbody td {
+ padding: 0.5rem 0.65rem;
+ vertical-align: middle;
+ border-bottom: 1px solid var(--border-color);
+ max-height: 3.25rem;
+ overflow: hidden;
+}
+
+/* Table row hover – very light, barely-there */
+.account-approvals-table tbody tr:hover {
+ background-color: rgba(0, 0, 0, 0.008);
+}
+
+/* Scrolling cells: solid background so they don’t show through sticky columns */
+.account-approvals-table tbody td:not(.account-approvals-col-num):not(.account-approvals-col-actions) {
+ background: var(--background-white);
+ position: relative;
+ z-index: 0;
+}
+
+.account-approvals-table tbody tr:hover td:not(.account-approvals-col-num):not(.account-approvals-col-actions) {
+ background: rgba(0, 0, 0, 0.008);
+}
+
+/* Fixed row size: long content shows ellipsis */
+.account-approvals-table .account-approvals-cell-text {
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+}
+
+/* Sticky # column (left) – on top when scrolling */
+.account-approvals-table .account-approvals-col-num {
+ position: sticky;
+ left: 0;
+ z-index: 4;
+ width: 2.5rem;
+ min-width: 2.5rem;
+ max-width: 2.5rem;
+ box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+ flex-shrink: 0;
+}
+
+.account-approvals-table thead .account-approvals-col-num {
+ background: var(--sidebar-bg) !important;
+}
+
+.account-approvals-table tbody .account-approvals-col-num {
+ background: var(--background-white) !important;
+}
+
+.account-approvals-table tbody tr:hover .account-approvals-col-num {
+ background: rgba(0, 0, 0, 0.008) !important;
+}
+
+/* Sticky Actions column (left, next to #) – on top when scrolling */
+.account-approvals-table .account-approvals-col-actions {
+ position: sticky;
+ left: 2.5rem;
+ z-index: 3;
+ width: 8.5rem;
+ min-width: 8.5rem;
+ max-width: none;
+ background: var(--background-white);
+ box-shadow: 2px 0 6px rgba(0, 0, 0, 0.08);
+ white-space: nowrap;
+ overflow: visible;
+}
+
+.account-approvals-action-btns {
+ flex-wrap: nowrap;
+}
+
+.account-approvals-table .account-approvals-col-actions .btn {
+ flex-shrink: 0;
+ overflow: visible;
+}
+
+.account-approvals-btn-icon {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* View – no glow, no lift; same smooth background transition as Approve/Reject */
+.account-approvals-col-actions .btn-primary.account-approvals-btn-icon {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--background-white) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.account-approvals-col-actions .btn-primary.account-approvals-btn-icon:hover:not(:disabled) {
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
+  color: var(--background-white) !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Edit / Approve / Reject – same: smooth background only, no glow */
+.account-approvals-col-actions .btn-secondary.account-approvals-btn-icon,
+.account-approvals-col-actions .btn-success.account-approvals-btn-icon,
+.account-approvals-col-actions .btn-danger.account-approvals-btn-icon {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.account-approvals-col-actions .btn-secondary.account-approvals-btn-icon:hover:not(:disabled) {
+  filter: brightness(0.92);
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.account-approvals-col-actions .btn-success.account-approvals-btn-icon:hover:not(:disabled) {
+  filter: brightness(0.92);
+  box-shadow: none !important;
+  transform: none !important;
+}
+.account-approvals-col-actions .btn-danger.account-approvals-btn-icon:hover:not(:disabled) {
+  filter: brightness(0.92);
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.account-approvals-table thead .account-approvals-col-actions {
+ background: var(--sidebar-bg) !important;
+}
+
+.account-approvals-table tbody tr:hover .account-approvals-col-actions {
+ background: rgba(0, 0, 0, 0.008) !important;
+}
+
+/* Pagination bar – responsive */
+.account-approvals-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--sidebar-bg) !important;
+  border-top: 1px solid var(--border-color);
+}
+
+.account-approvals-pagination .page-link {
+  color: var(--primary-color);
+  border-color: var(--border-color);
+  background: var(--background-white);
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.account-approvals-pagination .page-link:hover:not(.active):not(:disabled) {
+  background: var(--sidebar-hover);
+  color: var(--accent-color);
+  border-color: var(--border-color);
+}
+
+.account-approvals-pagination .page-link.active {
+  background: var(--primary-color);
+  color: var(--sidebar-active-text);
+  border-color: var(--primary-color);
+}
+
+.account-approvals-pagination .page-item:first-child .page-link,
+.account-approvals-pagination .page-item:last-child .page-link {
+  border-radius: 6px;
+}
+
+/* Stack pagination on medium and small screens */
+@media (max-width: 768px) {
+  .account-approvals-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+  }
+
+  .account-approvals-pagination-left {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .account-approvals-pagination-nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .account-approvals-pagination-nav .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .account-approvals-pagination {
+    padding: 0.5rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .account-approvals-pagination-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .account-approvals-pagination-nav .pagination {
+    justify-content: center;
+  }
+}
+
+/* ===== Portal modal (CPC-style) – backdrop + content animations ===== */
+@keyframes modalBackdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalBackdropFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes modalContentSlideIn {
+  from { opacity: 0; transform: translateY(-50px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes modalContentSlideOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(-50px) scale(0.95); }
+}
+
+/* Page transition – content enters from above (CSS-only, no flash) */
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-enter {
+  animation: pageEnter 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* Task Management – Create task / Submit buttons (solid #152A45, matches Personnel pagination) */
+.task-btn-primary {
+  background-color: #152a45 !important;
+  border-color: #152a45 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.task-btn-primary:hover:not(:disabled) {
+  background-color: #0f1f33 !important;
+  border-color: #0f1f33 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+/* Override modal footer: task-btn-primary keeps solid color when used with account-approvals-detail-close-btn */
+.task-btn-primary.account-approvals-detail-close-btn {
+  background-color: #152a45 !important;
+  border-color: #152a45 !important;
+  color: #ffffff !important;
+}
+.task-btn-primary.account-approvals-detail-close-btn:hover:not(:disabled) {
+  background-color: #0f1f33 !important;
+  border-color: #0f1f33 !important;
+  color: #ffffff !important;
+}
+
+/* Task priority badges – grey corporate scheme */
+.task-badge-priority-high {
+  background-color: #dc2626 !important;
+  color: #fff;
+}
+.task-badge-priority-medium {
+  background-color: #4b5563 !important;
+  color: #fff;
+}
+.task-badge-priority-low {
+  background-color: #9ca3af !important;
+  color: #fff;
+}
+
+.modal-backdrop-animation {
+  animation: modalBackdropFadeIn 0.3s ease-out forwards;
+}
+
+.modal-backdrop-animation.exit {
+  animation: modalBackdropFadeOut 0.2s ease-in forwards;
+}
+
+.modal-content-animation {
+  animation: modalContentSlideIn 0.3s ease-out forwards;
+}
+
+.modal-content-animation.exit {
+  animation: modalContentSlideOut 0.2s ease-in forwards;
+}
+
+.modal-smooth {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Detail modal – Portal structure (same as CPC), full officer info + Approve / Reject */
+.account-approvals-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.account-approvals-detail-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.account-approvals-detail-modal {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-white);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border: 1px solid var(--border-color);
+}
+
+.account-approvals-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  background: #f8f9fa;
+}
+
+.account-approvals-detail-header-text {
+  min-width: 0;
+}
+
+.account-approvals-detail-subtitle {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.account-approvals-detail-name {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.account-approvals-detail-email {
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 22rem;
+}
+
+.account-approvals-detail-body {
+  padding: 1.25rem 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.account-approvals-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.account-approvals-detail-field {
+  background: var(--background-white);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.85rem 0.95rem;
+  min-width: 0;
+}
+
+.account-approvals-detail-field-full {
+  grid-column: 1 / -1;
+}
+
+.account-approvals-detail-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.account-approvals-detail-value {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.account-approvals-action-help {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.account-approvals-action-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.account-approvals-action-textarea {
+  resize: vertical;
+  min-height: 96px;
+  font-size: 0.9rem;
+}
+
+/* Logout confirm: primary button keeps corporate blue (overrides account-approvals-detail-close-btn grey) */
+.logout-confirm-signout-btn {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: #fff !important;
+}
+.logout-confirm-signout-btn:hover {
+  background-color: var(--primary-dark) !important;
+  border-color: var(--primary-dark) !important;
+  color: #fff !important;
+}
+
+/* Personnel directory – summary stats panel (corporate / government style) */
+.personnel-stats-panel {
+  width: 100%;
+}
+
+.personnel-stats-view-full {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #64748b;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.personnel-stats-view-full:hover {
+  color: #1e3a5f;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.personnel-stats-view-full:focus-visible {
+  outline: 2px solid #1e3a5f;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.personnel-stats-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  min-height: 72px;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.personnel-stats-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+/* Stat card icons: indicator style (circle, tinted bg) – distinct from table action buttons */
+.personnel-stats-card-icon {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  border: none;
+  box-shadow: none;
+}
+
+.personnel-stats-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.personnel-stats-card-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.personnel-stats-card-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.personnel-stats-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personnel-stats-card-value-row .personnel-stats-view-full {
+  flex-shrink: 0;
+  margin-top: 0;
+  align-self: flex-end;
+}
+
+.personnel-stats-card-total .personnel-stats-card-icon {
+  background: rgba(30, 58, 95, 0.12);
+  color: #1e3a5f;
+}
+
+.personnel-stats-card-active .personnel-stats-card-icon {
+  background: rgba(22, 101, 52, 0.12);
+  color: #166534;
+}
+
+.personnel-stats-card-deactivated .personnel-stats-card-icon {
+  background: rgba(75, 85, 99, 0.12);
+  color: #4b5563;
+}
+
+.personnel-stats-card-rejected .personnel-stats-card-icon {
+  background: rgba(185, 28, 28, 0.12);
+  color: #b91c1c;
+}
+
+/* Mobile only: stack cards and fit small screens */
+@media (max-width: 575.98px) {
+  .personnel-stats-panel .row {
+    --bs-gutter-x: 0.5rem;
+    --bs-gutter-y: 0.5rem;
+  }
+  .personnel-stats-panel .row > [class*="col-"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .personnel-stats-card {
+    padding: 0.75rem 1rem;
+    min-height: 56px;
+    gap: 0.75rem;
+  }
+  .personnel-stats-card-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+  }
+  .personnel-stats-card-label {
+    font-size: 0.7rem;
+  }
+  .personnel-stats-card-value {
+    font-size: 1.2rem;
+  }
+  .personnel-stats-card-value-row {
+    flex-wrap: wrap;
+  }
+  .personnel-stats-card-value-row .personnel-stats-view-full {
+    width: 100%;
+    text-align: right;
+    margin-top: 0.15rem;
+  }
+  .personnel-stats-view-full {
+    font-size: 0.65rem;
+  }
+}
+
+/* Large numbers: scale down value so cards stay tidy */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .personnel-stats-card-value {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  }
+}
+
+/* Personnel full amount modal – uses account-approvals-detail-* for consistency */
+.personnel-full-amount-modal {
+  max-width: 380px;
+  width: 90%;
+}
+
+.personnel-full-amount-modal .personnel-full-amount-modal-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.personnel-full-amount-modal-body {
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+}
+
+.personnel-full-amount-modal-value {
+  font-size: 2rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #1e3a5f;
+  line-height: 1.2;
+}
+
+/* Officers status badges (reused in approvals profile and officers list) */
+.officers-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.officers-status-approved {
+  background-color: #e6f4ea;
+  color: #166534;
+}
+
+.officers-status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.officers-status-rejected {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.officers-status-deactivated {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+/* Officer avatars – table + detail modal */
+.officer-avatar-cell {
+  width: 3rem;
+  min-width: 3rem;
+}
+
+.officer-avatar-header {
+  width: 4rem;
+}
+
+.officer-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background-color: #e2e8f0;
+  color: var(--primary-color);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.officer-avatar-lg {
+  width: 3.5rem;
+  height: 3.5rem;
+  font-size: 1rem;
+}
+
+.account-approvals-detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border-color);
+  background: #f8f9fa;
+}
+
+.account-approvals-detail-close-btn {
+  min-width: 7.5rem;
+  box-shadow: none !important;
+  transform: none !important;
+  background-color: #f0f2f5 !important;        /* same family as top close button */
+  color: var(--text-secondary) !important;
+  border: 1px solid #cbd5e1 !important;        /* soft grey border for definition */
+  font-weight: 500;
+}
+
+.account-approvals-detail-close-btn:hover {
+  background-color: #e2e8f0 !important;        /* slightly darker grey on hover */
+  color: var(--primary-color) !important;      /* same hover color as top X */
+  border-color: #b4c3d4 !important;
+}
+
+/* Confirmation buttons (Approve, Activate) – #0F1F33, overrides grey. Close/Cancel stay as-is. */
+.modal-confirm-btn {
+  min-width: 7.5rem;
+  background-color: #0f1f33 !important;
+  border-color: #0f1f33 !important;
+  color: #ffffff !important;
+}
+.modal-confirm-btn:hover:not(:disabled) {
+  background-color: #0a1626 !important;
+  border-color: #0a1626 !important;
+  color: #ffffff !important;
+}
+
+/* Reject / Deactivate – red, same hover pattern as approve (slightly darker) */
+.modal-reject-btn {
+  min-width: 7.5rem;
+  background-color: #b91c1c !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+.modal-reject-btn:hover:not(:disabled) {
+  background-color: #991b1b !important;
+  border-color: #991b1b !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 576px) {
+  .account-approvals-detail-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .account-approvals-detail-modal {
+    max-width: 100%;
+    margin: auto 0;
+  }
+
+  .account-approvals-detail-header,
+  .account-approvals-detail-body {
+    padding: 1rem;
+  }
+
+  .account-approvals-detail-email {
+    max-width: 75vw;
+  }
+
+  .account-approvals-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-approvals-detail-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .account-approvals-detail-close-btn,
+  .modal-confirm-btn,
+  .modal-reject-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+@media (max-width: 768px) {
+ .account-approvals-table-wrap {
+  margin: 0 -0.5rem;
+  border-radius: 0;
+ }
+
+ .account-approvals-table {
+  min-width: 36rem;
+  table-layout: auto;
+ }
+
+ .account-approvals-table thead th,
+ .account-approvals-table tbody td {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8125rem;
+ }
+
+ /* Keep column widths so content shows like large screen; scroll horizontally */
+ .account-approvals-table th:nth-child(3),
+ .account-approvals-table td:nth-child(3) {
+  min-width: 8rem;
+ }
+ .account-approvals-table th:nth-child(4),
+ .account-approvals-table td:nth-child(4) {
+  min-width: 12rem;
+ }
+ .account-approvals-table th:nth-child(5),
+ .account-approvals-table td:nth-child(5) {
+  min-width: 6.5rem;
+ }
+
+ .account-approvals-table .account-approvals-col-num {
+  width: 2.25rem;
+  min-width: 2.25rem;
+  max-width: 2.25rem;
+  left: 0;
+ }
+
+ .account-approvals-table .account-approvals-col-actions {
+  left: 2.25rem;
+  width: 7rem;
+  min-width: 7rem;
+ }
+
+ .account-approvals-btn-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.8125rem;
+ }
+
+ .account-approvals-pagination {
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+ }
+}
+
+/* Mobile: keep action buttons same size as tablet (2rem) – clean, tappable */
+@media (max-width: 576px) {
+ .account-approvals-table .account-approvals-col-actions {
+  width: 7rem;
+  min-width: 7rem;
+ }
+ .account-approvals-btn-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.8125rem;
+ }
+ .account-approvals-action-btns {
+  gap: 0.35rem;
+ }
 }
 
 /* Card Styles */
@@ -1163,7 +2851,7 @@ footer small {
  background-color: var(--btn-primary-hover);
  border-color: var(--btn-primary-hover);
  transform: translateY(-1px);
- box-shadow: 0 4px 12px rgba(51, 108, 53, 0.3);
+ box-shadow: 0 4px 12px rgba(245, 66, 134, 0.35);
 }
 
 /* Breadcrumb */
@@ -1269,19 +2957,6 @@ footer small {
  padding: 0.25rem 0;
 }
 
-/* Ensure proper spacing on mobile */
-@media (max-width: 575.98px) {
- .navbar-brand {
- padding-left: 0.5rem !important;
- }
- .sb-topnav .btn-link {
- margin-right: 0.5rem !important;
- }
- .navbar-nav {
- margin-right: 0.5rem !important;
- }
-}
-
 /* Adjust topbar elements spacing for mobile */
 @media (max-width: 767.98px) {
  .sb-topnav .navbar-nav {
@@ -1315,27 +2990,27 @@ footer small {
 /* Fix for sidebar toggle overlay on mobile */
 @media (max-width: 767.98px) {
  .sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
- transform: translateX(-250px);
+  transform: translateX(-250px);
  }
  .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
- padding-left: 0;
+  padding-left: 0;
  }
  .sb-sidenav-toggled #layoutSidenav #layoutSidenav_nav {
- transform: translateX(0);
+  transform: translateX(0);
  }
  .sb-sidenav-toggled #layoutSidenav #layoutSidenav_content {
- padding-left: 0;
+  padding-left: 0;
  }
  .sb-sidenav-toggled #layoutSidenav #layoutSidenav_content::before {
- content: "";
- display: block;
- position: fixed;
- top: 60px;
- left: 0;
- width: 100%;
- height: calc(100vh - 60px);
- background: rgba(0, 0, 0, 0.5);
- z-index: 1037;
+  content: "";
+  display: block;
+  position: fixed;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - 60px);
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1037;
  }
 }
 
@@ -1379,7 +3054,7 @@ footer small {
 .coa-action-btn-edit {
  border-color: #d0d7e2;
  background-color: #ffffff;
- color: #0c203f;
+ color: var(--primary-color);
 }
 
 .coa-action-btn-edit:hover:not(:disabled) {
@@ -2357,24 +4032,28 @@ body {
  right: 1rem;
  width: 32px;
  height: 32px;
- border: 1px solid var(--input-border);
+  border: 1px solid transparent;
  border-radius: 50%;
- background-color: var(--background-light);
- color: var(--text-muted);
+  background-color: #f0f2f5; /* very light grey, same family as modal header */
+  color: var(--text-secondary);
  display: flex;
  align-items: center;
  justify-content: center;
  font-size: 0.875rem;
  cursor: pointer;
- transition: all 0.2s ease;
+ transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
  z-index: 1;
 }
 
 .btn-close-custom:hover {
- background-color: var(--primary-light);
- border-color: var(--primary-color);
- color: var(--primary-dark);
- transform: scale(1.1);
+  background-color: #e2e8f0; /* slightly darker grey, still light */
+  border-color: #cbd5e1;
+  color: var(--primary-color);
+}
+
+.btn-close-custom:focus-visible {
+ outline: none;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.16);
 }
 
 /* ---------- Layer above topbar (topbar z-index 11000) ---------- */
@@ -2630,6 +4309,7 @@ body {
 
 .accounts-coa-type-name {
  /* no-op – class kept for backward compatibility if used elsewhere */
+ --noop: 0;
 }
 
 /* Sticky actions column for Chart of Accounts on small screens */
@@ -3116,7 +4796,7 @@ body {
  transform: translateY(-2px);
 }
 .accounts-coa-page .accounts-coa-tab-btn[style*="linear-gradient"]:hover {
- background: linear-gradient(135deg, #0c203f 0%, #1f3e6d 100%) !important;
+ background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-color) 100%) !important;
  filter: brightness(1.08);
 }
 .accounts-coa-page .accounts-coa-tab-btn.accounts-coa-tab-selected,
@@ -3154,7 +4834,7 @@ body {
  gap: 0.5rem !important;
  }
  .accounts-coa-page .accounts-coa-header-actions {
- border-end: none !important;
+ border-right: none !important;
  margin-right: 0 !important;
  padding-right: 0 !important;
  flex-direction: column;

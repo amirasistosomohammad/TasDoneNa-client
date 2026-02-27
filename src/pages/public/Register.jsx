@@ -15,7 +15,7 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext.jsx";
-import { showAlert, showToast } from "../../services/notificationService.js";
+import { showToast } from "../../services/notificationService.js";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
 import TextLogo from "../../assets/logo-text.png";
@@ -40,6 +40,7 @@ const Register = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const otpInputRefs = useRef([]);
+  const rightPanelRef = useRef(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -87,14 +88,16 @@ const Register = () => {
 
   useEffect(() => {
     if (step === "otp") {
-      // Smoothly scroll to top so OTP panel is fully visible
-      window.scrollTo({ top: 0, behavior: "smooth" });
-
-      // After the slide animation finishes, focus the first OTP input
-      if (otpInputRefs.current[0]) {
-        const t = setTimeout(() => otpInputRefs.current[0]?.focus(), 350);
-        return () => clearTimeout(t);
+      // Scroll the right panel to top so OTP is visible (smooth slide)
+      const scrollEl = rightPanelRef.current;
+      if (scrollEl) {
+        scrollEl.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
+      // Focus first OTP input after slide animation
+      const t = setTimeout(() => otpInputRefs.current[0]?.focus(), 400);
+      return () => clearTimeout(t);
     }
   }, [step]);
 
@@ -276,7 +279,7 @@ const Register = () => {
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       const firstError = Object.values(errors)[0];
-      showAlert.error("Validation Error", firstError);
+      showToast.error(firstError);
       return false;
     }
 
@@ -293,10 +296,7 @@ const Register = () => {
     setIsSubmitting(true);
 
     try {
-      showAlert.loading("Creating your account...");
-
       const result = await registerUser(form);
-      showAlert.close();
 
       if (result.success) {
         showToast.success(
@@ -306,17 +306,16 @@ const Register = () => {
         setOtpError("");
         setOtpDigits(["", "", "", "", "", ""]);
       } else {
-        showAlert.error("Registration Failed", result.error || "Please try again.");
+        showToast.error(result.error || "Please try again.");
       }
     } catch (error) {
-      showAlert.close();
       const errData = error.data || {};
       const message =
         errData.message ||
         (errData.errors ? Object.values(errData.errors).flat().join(" ") : null) ||
         error.message ||
         "There was an error creating your account. Please try again.";
-      showAlert.error("Registration Failed", message);
+      showToast.error(message);
       if (errData.errors && typeof errData.errors === "object") {
         const flat = {};
         for (const [k, v] of Object.entries(errData.errors)) {
@@ -376,37 +375,28 @@ const Register = () => {
         />
       </div>
 
-      {/* Right Panel - Scrollable */}
-      <div className="col-12 col-lg-6 ms-lg-auto position-relative">
-        {/* Background */}
+      {/* Right Panel - Scrollable (so we can scroll to top when switching to OTP) */}
+      <div
+        ref={rightPanelRef}
+        className="col-12 col-lg-6 ms-lg-auto position-relative register-right-panel"
+        style={{ overflowY: "auto", maxHeight: "100vh" }}
+      >
+        {/* Background: same #F5F7FB as form card so top and bottom are even */}
         <div
           className="position-absolute top-0 start-0 w-100 h-100"
           style={{
-            backgroundColor: theme.backgroundLight,
-            background: `linear-gradient(135deg, ${theme.backgroundLight} 0%, #e9ecef 50%, #dee2e6 100%)`,
-          }}
-        />
-
-        {/* Subtle grid pattern overlay */}
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(245, 66, 134, 0.03) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(245, 66, 134, 0.03) 1px, transparent 1px)
-            `,
-            backgroundSize: "50px 50px",
-            pointerEvents: "none",
+            backgroundColor: "#F5F7FB",
           }}
         />
 
         <div className="min-vh-100 d-flex align-items-center justify-content-center p-3 p-lg-4">
           <div
-            className={`bg-white rounded-4 shadow-lg p-4 p-sm-5 w-100 form-container ${
+            className={`rounded-4 shadow-lg p-4 p-sm-5 w-100 form-container ${
               isMounted ? "fade-in" : ""
             }`}
             style={{
               maxWidth: "520px",
+              backgroundColor: "#F5F7FB",
               border: `1px solid ${theme.borderColor}`,
               position: "relative",
               zIndex: 2,
@@ -1014,13 +1004,7 @@ const Register = () => {
 
                     <button
                       type="submit"
-                      className="btn w-100 fw-semibold py-2 mb-2 rounded-3 register-otp-verify-btn"
-                      style={{
-                        backgroundColor: theme.primary,
-                        color: "#fff",
-                        border: "none",
-                        boxShadow: "0 4px 12px rgba(245, 66, 134, 0.3)",
-                      }}
+                      className="btn-login w-100 py-2 fw-semibold mb-2 d-flex justify-content-center align-items-center"
                       disabled={verifyLoading}
                     >
                       {verifyLoading ? (

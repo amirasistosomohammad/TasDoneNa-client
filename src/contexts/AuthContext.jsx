@@ -70,12 +70,14 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       // Prefer validation error (e.g. "Invalid credentials.") so we don't leak account status
       const validationError = err.data?.errors?.email?.[0];
-      const message =
+      let message =
         validationError ||
         err.data?.message ||
-        (err.data?.reason ? `Rejected: ${err.data.reason}` : null) ||
         err.message ||
         "Invalid credentials.";
+      if ((err.data?.status === "rejected" || err.data?.status === "deactivated") && err.data?.reason) {
+        message = message + (message.endsWith(".") ? " " : ". ") + err.data.reason;
+      }
       return { success: false, error: message, status: err.data?.status };
     }
   };

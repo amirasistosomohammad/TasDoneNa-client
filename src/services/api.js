@@ -15,7 +15,12 @@ export const api = {
   baseUrl: getBaseUrl(),
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseUrl.replace(/\/$/, "")}/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    let path = `${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    if (options.params && Object.keys(options.params).length > 0) {
+      const qs = new URLSearchParams(options.params).toString();
+      path += (path.includes("?") ? "&" : "?") + qs;
+    }
+    const url = `${this.baseUrl.replace(/\/$/, "")}/api${path}`;
     const headers = {
       "Content-Type": "application/json",
       Accept: "application/json",
@@ -36,8 +41,8 @@ export const api = {
     return data;
   },
 
-  get(endpoint) {
-    return this.request(endpoint, { method: "GET" });
+  get(endpoint, options = {}) {
+    return this.request(endpoint, { ...options, method: "GET" });
   },
 
   post(endpoint, body) {
