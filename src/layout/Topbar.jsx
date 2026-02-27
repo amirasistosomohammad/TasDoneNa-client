@@ -124,6 +124,7 @@ const Topbar = ({ onToggleSidebar }) => {
   const getRoleDisplay = () => {
     if (!user?.role) return null;
     if (user.role === "admin") return "Administrator";
+    if (user.role === "officer") return "Personnel";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   };
 

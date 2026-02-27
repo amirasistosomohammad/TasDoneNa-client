@@ -2487,6 +2487,104 @@ footer small {
   color: #b91c1c;
 }
 
+/* ===== Dashboard – corporate / government style ===== */
+.dashboard-overview-card {
+  background: var(--background-white);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.dashboard-overview-card .account-approvals-card-header {
+  background: linear-gradient(to bottom, #fafbfc, var(--background-white));
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+}
+
+.dashboard-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+}
+
+@media (min-width: 576px) {
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .dashboard-stat-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.dashboard-stat-block {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  background: var(--background-white);
+  min-height: 5rem;
+}
+
+/* Remove right border on last column per row */
+.dashboard-stat-grid .dashboard-stat-block:nth-child(2n) { border-right: none; }
+.dashboard-stat-grid .dashboard-stat-block:last-child { border-right: none; }
+@media (min-width: 576px) {
+  .dashboard-stat-grid .dashboard-stat-block:nth-child(2n) { border-right: 1px solid var(--border-color); }
+  .dashboard-stat-grid .dashboard-stat-block:nth-child(3n) { border-right: none; }
+}
+@media (min-width: 992px) {
+  .dashboard-stat-grid .dashboard-stat-block:nth-child(3n) { border-right: 1px solid var(--border-color); }
+  .dashboard-stat-grid .dashboard-stat-block:nth-child(6n) { border-right: none; }
+}
+
+.dashboard-stat-block-link {
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.dashboard-stat-block-link:hover {
+  background: rgba(30, 58, 95, 0.04);
+}
+
+.dashboard-stat-block-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-stat-block-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 575.98px) {
+  .dashboard-stat-block {
+    padding: 0.75rem 1rem;
+    min-height: 4rem;
+  }
+  .dashboard-stat-block-value {
+    font-size: 1.25rem;
+  }
+  .dashboard-stat-block-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* Quick actions list */
+.dashboard-quick-actions-list li {
+  border-bottom: 1px solid var(--border-color);
+}
+.dashboard-quick-actions-list li:last-child {
+  border-bottom: none;
+}
+
 /* Mobile only: stack cards and fit small screens */
 @media (max-width: 575.98px) {
   .personnel-stats-panel .row {

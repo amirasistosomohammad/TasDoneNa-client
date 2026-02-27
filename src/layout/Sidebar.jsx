@@ -117,8 +117,8 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
         <div className="small">Logged in as:</div>
         <span className="fw-semibold">{user?.name || "User"}</span>
         {user?.role && (
-          <span className="small text-muted d-block mt-1 text-capitalize">
-            {user.role}
+          <span className="small text-muted d-block mt-1">
+            {user.role === "admin" ? "Administrator" : user.role === "officer" ? "Personnel" : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
           </span>
         )}
       </div>
