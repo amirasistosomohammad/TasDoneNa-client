@@ -183,21 +183,6 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
 
           {isAdmin && (
             <>
-              <div className="sb-sidenav-menu-heading">Reports & compliance</div>
-              <NavLink
-                to="/admin/accomplishment-reports"
-                end
-                className={({ isActive }) =>
-                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
-                }
-                onClick={handleLinkClick}
-                title="Accomplishment reports"
-              >
-                <div className="sb-nav-link-icon flex-shrink-0">
-                  <FaFileAlt />
-                </div>
-                <span className="sb-sidebar-nav-link-label">Accomplishment reports</span>
-              </NavLink>
               <div className="sb-sidenav-menu-heading">System</div>
               <NavLink
                 to="/activity-logs"

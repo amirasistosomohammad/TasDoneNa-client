@@ -191,7 +191,7 @@ export const api = {
   downloadPost(endpoint, body, fallbackFilename = "download") {
     const token = getToken();
     const url = `${this.baseUrl.replace(/\/$/, "")}/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-    return fetch(url, {
+    const fetchOpts = {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -200,7 +200,11 @@ export const api = {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(body ?? {}),
-    }).then(async (res) => {
+    };
+    if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) {
+      fetchOpts.signal = AbortSignal.timeout(180000);
+    }
+    return fetch(url, fetchOpts).then(async (res) => {
       const ct = res.headers.get("Content-Type") || "";
       if (!res.ok) {
         const data = ct.includes("json") ? await res.json().catch(() => ({})) : {};

@@ -22,8 +22,6 @@ import TaskListPage from "./pages/admin/TaskListPage.jsx";
 import Settings from "./pages/admin/Settings.jsx";
 import ActivityLogs from "./pages/admin/ActivityLogs.jsx";
 import MonitorOfficers from "./pages/admin/MonitorOfficers.jsx";
-import AdminAccomplishmentReportsPage from "./pages/admin/AccomplishmentReportsPage.jsx";
-import AdminAccomplishmentReportDetailPage from "./pages/admin/AccomplishmentReportDetailPage.jsx";
 import Layout from "./layout/Layout.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import OfficerRoute from "./components/OfficerRoute.jsx";
@@ -136,22 +134,6 @@ const router = createBrowserRouter(
               element={
                 <AdminRoute>
                   <ActivityLogs />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="admin/accomplishment-reports"
-              element={
-                <AdminRoute>
-                  <AdminAccomplishmentReportsPage />
-                </AdminRoute>
-              }
-            />
-            <Route
-              path="admin/accomplishment-reports/:id"
-              element={
-                <AdminRoute>
-                  <AdminAccomplishmentReportDetailPage />
                 </AdminRoute>
               }
             />

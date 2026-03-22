@@ -242,8 +242,7 @@ const Login = () => {
                 className="fw-bolder login-logo-subtitle"
                 style={{ color: theme.primary }}
               >
-                A To Do List Management System for Public School Administrative
-                Personnel
+                A To Do List Management System for Public School Administrative Officers
               </p>
             </div>
           </div>

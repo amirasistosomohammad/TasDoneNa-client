@@ -75,13 +75,11 @@ const Dashboard = () => {
     setRecentLoading(true);
     try {
       if (isAdmin) {
-        // Admin: Get recent reports
-        const reportsData = await api.get("/admin/accomplishment-reports");
-        const reports = (reportsData.reports || []).slice(0, 5);
-        setRecentReports(reports);
-        setRecentTasks([]);
+        const tasksData = await api.get("/tasks").catch(() => ({ tasks: [] }));
+        const tasks = (tasksData.tasks || []).slice(0, 5);
+        setRecentTasks(tasks);
+        setRecentReports([]);
       } else {
-        // Personnel: Get recent tasks and reports
         const [tasksData, reportsData] = await Promise.all([
           api.get("/tasks").catch(() => ({ tasks: [] })),
           api.get("/accomplishment-reports").catch(() => ({ reports: [] })),
@@ -292,17 +290,6 @@ const Dashboard = () => {
                       <button
                         type="button"
                         className="btn btn-link p-0 text-start text-decoration-none"
-                        onClick={() => navigate("/admin/accomplishment-reports")}
-                        style={{ color: "inherit" }}
-                      >
-                        <FaFileAlt className="me-2" />
-                        Review accomplishment reports
-                      </button>
-                    </li>
-                    <li className="py-2">
-                      <button
-                        type="button"
-                        className="btn btn-link p-0 text-start text-decoration-none"
                         onClick={() => navigate("/task-management")}
                         style={{ color: "inherit" }}
                       >
@@ -321,7 +308,7 @@ const Dashboard = () => {
             <div className="card-header bg-white border-bottom account-approvals-card-header">
               <h6 className="mb-0 fw-semibold account-approvals-card-title">Recent activity</h6>
               <p className="small text-muted mb-0 mt-1">
-                Your latest tasks and reports.
+                {isAdmin ? "Recently updated tasks." : "Your latest tasks and reports."}
               </p>
             </div>
             <div className="card-body">
@@ -331,21 +318,25 @@ const Dashboard = () => {
                 </div>
               ) : recentTasks.length === 0 && recentReports.length === 0 ? (
                 <p className="small text-muted mb-0">
-                  No recent activity yet. Start by creating a task or downloading your monthly accomplishment report.
+                  {isAdmin
+                    ? "No recent tasks to show."
+                    : "No recent activity yet. Start by creating a task or downloading your monthly accomplishment report."}
                 </p>
               ) : (
                 <div className="list-group list-group-flush">
-                  {!isAdmin && recentTasks.length > 0 && (
+                  {recentTasks.length > 0 && (
                     <>
-                      <div className="small fw-semibold text-muted mb-2">Recent Tasks</div>
+                      <div className="small fw-semibold text-muted mb-2">Recent tasks</div>
                       {recentTasks.map((task) => (
                         <div
                           key={task.id}
                           className="list-group-item px-0 py-2 border-0 border-bottom"
                           role="button"
                           tabIndex={0}
-                          onClick={() => navigate(`/my-tasks/${task.id}`)}
-                          onKeyDown={(e) => e.key === "Enter" && navigate(`/my-tasks/${task.id}`)}
+                          onClick={() => navigate(isAdmin ? `/task-management` : `/my-tasks/${task.id}`)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && navigate(isAdmin ? `/task-management` : `/my-tasks/${task.id}`)
+                          }
                         >
                           <div className="d-flex justify-content-between align-items-start">
                             <div className="flex-grow-1">
@@ -362,24 +353,21 @@ const Dashboard = () => {
                       ))}
                     </>
                   )}
-                  {recentReports.length > 0 && (
+                  {!isAdmin && recentReports.length > 0 && (
                     <>
-                      <div className="small fw-semibold text-muted mb-2 mt-3">
-                        {isAdmin ? "Recent Reports" : "Recent Reports"}
-                      </div>
+                      <div className="small fw-semibold text-muted mb-2 mt-3">Recent reports</div>
                       {recentReports.map((report) => (
                         <div
                           key={report.id}
                           className="list-group-item px-0 py-2 border-0 border-bottom"
                           role="button"
                           tabIndex={0}
-                          onClick={() => navigate(isAdmin ? `/admin/accomplishment-reports/${report.id}` : `/accomplishment-reports/${report.id}`)}
-                          onKeyDown={(e) => e.key === "Enter" && navigate(isAdmin ? `/admin/accomplishment-reports/${report.id}` : `/accomplishment-reports/${report.id}`)}
+                          onClick={() => navigate(`/accomplishment-reports/${report.id}`)}
+                          onKeyDown={(e) => e.key === "Enter" && navigate(`/accomplishment-reports/${report.id}`)}
                         >
                           <div className="d-flex justify-content-between align-items-start">
                             <div className="flex-grow-1">
                               <div className="small fw-semibold">
-                                {isAdmin && report.user ? `${report.user.name} - ` : ""}
                                 {getMonthName(report.month)} {report.year}
                               </div>
                               <div className="small text-muted">
