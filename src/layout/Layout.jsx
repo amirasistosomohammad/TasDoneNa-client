@@ -121,20 +121,14 @@ const Layout = () => {
       loadSettings(false);
     };
 
-    // When the tab becomes visible, refresh settings so branding stays in sync
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        loadSettings(false);
-      }
-    };
+    // Avoid refetching /settings on every browser tab focus — it duplicates SystemSettingsContext
+    // and can spike the API (504s on slow / cold hosts). Event-driven refresh is enough.
 
     window.addEventListener("tasdonena-settings-updated", handleSettingsUpdated);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       cancelled = true;
       window.removeEventListener("tasdonena-settings-updated", handleSettingsUpdated);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 

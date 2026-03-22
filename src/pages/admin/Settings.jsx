@@ -35,7 +35,7 @@ export default function Settings() {
     logo_url: null,
   });
   const [logoError, setLogoError] = useState(false);
-  const [systemSettingsLoading, setSystemSettingsLoading] = useState(true);
+  const [systemSettingsLoading, setSystemSettingsLoading] = useState(false);
   const [systemForm, setSystemForm] = useState({ app_name: "" });
   const [systemErrors, setSystemErrors] = useState({});
   const [systemSaving, setSystemSaving] = useState(false);
@@ -139,27 +139,37 @@ export default function Settings() {
     }
   };
 
+  // Load branding only when this tab is open — avoids duplicate /settings traffic with Layout + context
+  // and refetches fresh data each time the admin returns to System Branding.
   useEffect(() => {
-    const loadSettings = async () => {
+    if (activeTab !== "branding") return undefined;
+    let cancelled = false;
+    const loadBranding = async () => {
       setSystemSettingsLoading(true);
+      setLogoError(false);
       try {
         const res = await api.get("/settings");
+        if (cancelled) return;
         setSystemSettings({
           app_name: res?.app_name || "",
           logo_url: res?.logo_url || null,
         });
-        setLogoError(false); // Reset error state when loading fresh settings
         setSystemForm({
           app_name: res?.app_name || "",
         });
       } catch (err) {
-        showToast.error(err?.message || "Failed to load system settings.");
+        if (!cancelled) {
+          showToast.error(err?.message || "Failed to load system settings.");
+        }
       } finally {
-        setSystemSettingsLoading(false);
+        if (!cancelled) setSystemSettingsLoading(false);
       }
     };
-    loadSettings();
-  }, []);
+    loadBranding();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   const handleSystemChange = (e) => {
     const { name, value } = e.target;
@@ -677,8 +687,7 @@ export default function Settings() {
                               onLoad={() => {
                                 setLogoError(false);
                               }}
-                              onError={(e) => {
-                                console.error("Logo failed to load:", normalizeLogoUrl(systemSettings.logo_url));
+                              onError={() => {
                                 setLogoError(true);
                               }}
                             />

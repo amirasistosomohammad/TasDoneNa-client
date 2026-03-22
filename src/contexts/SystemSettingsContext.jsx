@@ -29,9 +29,8 @@ export const SystemSettingsProvider = ({ children }) => {
         logo_url: res?.logo_url || null,
         tagline: res?.tagline || "",
       });
-      if (res?.logo_url) {
-        setLogoTimestamp(Date.now());
-      }
+      // Bust <img> cache whenever settings reload (logo URL includes ?v= from server; t= adds another layer).
+      setLogoTimestamp(Date.now());
     } catch (err) {
       console.error("Failed to load system settings:", err);
       setSystemSettings((prev) => ({
@@ -50,27 +49,17 @@ export const SystemSettingsProvider = ({ children }) => {
     // Initial load
     loadSettings(true);
 
-    // Listen for settings updates
     const handleSettingsUpdated = () => {
       if (!cancelled) {
         loadSettings(false);
       }
     };
 
-    // Refresh when tab becomes visible
-    const handleVisibilityChange = () => {
-      if (!cancelled && document.visibilityState === "visible") {
-        loadSettings(false);
-      }
-    };
-
     window.addEventListener("tasdonena-settings-updated", handleSettingsUpdated);
-    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       cancelled = true;
       window.removeEventListener("tasdonena-settings-updated", handleSettingsUpdated);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
