@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaList, FaPlus, FaUserCheck, FaUsers } from "react-icons/fa";
+import { FaTachometerAlt, FaList, FaPlus, FaUserCheck, FaUsers, FaDesktop, FaCog, FaFileAlt, FaUser, FaHistory, FaCalendarAlt, FaArchive } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext.jsx";
 
 /**
@@ -10,6 +10,7 @@ import { useAuth } from "../contexts/AuthContext.jsx";
 const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const isOfficer = user?.role === "officer";
   const countLoaded = pendingApprovalsCount !== null && pendingApprovalsCount !== undefined;
   const pendingCount = countLoaded ? pendingApprovalsCount : 0;
 
@@ -23,36 +24,36 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
     <nav className="sb-sidenav accordion sb-sidenav-light" id="sidenavAccordion">
       <div className="sb-sidenav-menu">
         <div className="nav">
-          <div className="sb-sidenav-menu-heading">Core</div>
+          <div className="sb-sidenav-menu-heading">Overview</div>
           <NavLink
             to="/dashboard"
             className={({ isActive }) =>
-              "nav-link" + (isActive ? " active" : "")
+              "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
             }
             onClick={handleLinkClick}
           >
-            <div className="sb-nav-link-icon">
+            <div className="sb-nav-link-icon flex-shrink-0">
               <FaTachometerAlt />
             </div>
-            Dashboard
+            <span className="sb-sidebar-nav-link-label">Dashboard</span>
           </NavLink>
 
           {isAdmin && (
             <>
-              <div className="sb-sidenav-menu-heading">User management</div>
+              <div className="sb-sidenav-menu-heading">Administration</div>
               <NavLink
                 to="/account-approvals"
                 className={({ isActive }) =>
-                  "nav-link sb-sidebar-link-with-badge d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                  "nav-link sb-sidebar-link-with-badge sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
                 }
                 onClick={handleLinkClick}
-                title="Account approvals"
+                title="Account requests"
               >
                 <span className="sb-sidebar-nav-link-text d-flex align-items-center min-w-0">
                   <div className="sb-nav-link-icon flex-shrink-0">
                     <FaUserCheck />
                   </div>
-                  <span className="sb-sidebar-nav-link-label text-truncate">Account approvals</span>
+                  <span className="sb-sidebar-nav-link-label text-truncate">Account requests</span>
                 </span>
                 <span
                   className="badge sb-sidebar-badge-approvals rounded-pill flex-shrink-0"
@@ -65,48 +66,164 @@ const Sidebar = ({ onCloseSidebar, pendingApprovalsCount }) => {
               <NavLink
                 to="/officers"
                 className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active" : "")
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
                 }
                 onClick={handleLinkClick}
                 title="Personnel directory"
               >
-                <div className="sb-nav-link-icon">
+                <div className="sb-nav-link-icon flex-shrink-0">
                   <FaUsers />
                 </div>
-                Personnel directory
+                <span className="sb-sidebar-nav-link-label">Personnel directory</span>
+              </NavLink>
+              <div className="sb-sidenav-menu-heading">Monitoring</div>
+              <NavLink
+                to="/monitor-officers"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Monitor personnel"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaDesktop />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Monitor personnel</span>
+              </NavLink>
+            </>
+          )}
+
+          {isOfficer && (
+            <>
+              <div className="sb-sidenav-menu-heading">Work & deliverables</div>
+              <NavLink
+                to="/my-tasks"
+                end
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Task schedule"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaList />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Task schedule</span>
+              </NavLink>
+              <NavLink
+                to="/my-tasks/create"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Create task"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaPlus />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Create task</span>
+              </NavLink>
+              <div className="sb-sidenav-menu-heading">Reports & records</div>
+              <NavLink
+                to="/accomplishment-reports"
+                end
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Accomplishment reports"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaFileAlt />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Accomplishment reports</span>
+              </NavLink>
+              <NavLink
+                to="/calendar"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Work calendar"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaCalendarAlt />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Work calendar</span>
+              </NavLink>
+              <NavLink
+                to="/files-archive"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Document archive"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaArchive />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Document archive</span>
+              </NavLink>
+              <div className="sb-sidenav-menu-heading">My account</div>
+              <NavLink
+                to="/profile"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="My profile"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaUser />
+                </div>
+                <span className="sb-sidebar-nav-link-label">My profile</span>
               </NavLink>
             </>
           )}
 
           {isAdmin && (
             <>
-              <div className="sb-sidenav-menu-heading">Tasks</div>
+              <div className="sb-sidenav-menu-heading">Reports & compliance</div>
               <NavLink
-                to="/task-management"
+                to="/admin/accomplishment-reports"
                 end
                 className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active" : "")
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
                 }
                 onClick={handleLinkClick}
-                title="Task list"
+                title="Accomplishment reports"
               >
-                <div className="sb-nav-link-icon">
-                  <FaList />
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaFileAlt />
                 </div>
-                Task list
+                <span className="sb-sidebar-nav-link-label">Accomplishment reports</span>
+              </NavLink>
+              <div className="sb-sidenav-menu-heading">System</div>
+              <NavLink
+                to="/activity-logs"
+                className={({ isActive }) =>
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
+                }
+                onClick={handleLinkClick}
+                title="Activity logs"
+              >
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaHistory />
+                </div>
+                <span className="sb-sidebar-nav-link-label">Activity logs</span>
               </NavLink>
               <NavLink
-                to="/task-management/create"
+                to="/settings"
                 className={({ isActive }) =>
-                  "nav-link" + (isActive ? " active" : "")
+                  "nav-link sb-sidebar-nav-item d-flex align-items-center flex-nowrap" + (isActive ? " active" : "")
                 }
                 onClick={handleLinkClick}
-                title="Create task"
+                title="Settings"
               >
-                <div className="sb-nav-link-icon">
-                  <FaPlus />
+                <div className="sb-nav-link-icon flex-shrink-0">
+                  <FaCog />
                 </div>
-                Create task
+                <span className="sb-sidebar-nav-link-label">System settings</span>
               </NavLink>
             </>
           )}

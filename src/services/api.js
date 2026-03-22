@@ -49,6 +49,23 @@ export const api = {
     return this.request(endpoint, { method: "POST", body: JSON.stringify(body) });
   },
 
+  upload(endpoint, formData) {
+    const url = `${this.baseUrl.replace(/\/$/, "")}/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    const headers = { Accept: "application/json" };
+    const token = getToken();
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return fetch(url, { method: "POST", body: formData, headers }).then(async (res) => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error(data.message || "Upload failed");
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      return data;
+    });
+  },
+
   put(endpoint, body) {
     return this.request(endpoint, { method: "PUT", body: JSON.stringify(body) });
   },

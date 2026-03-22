@@ -1,21 +1,23 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api.js";
 import { showAlert } from "../../services/notificationService.js";
-import { FaClipboardList } from "react-icons/fa";
+import { FaClipboardList, FaPlus, FaSyncAlt } from "react-icons/fa";
 import TaskList from "../../components/admin/TaskList.jsx";
 
 /**
- * Admin task list — view only (Phase 2.7).
- * Personnel create their own tasks; admin can view all for oversight.
+ * Personnel task list — own tasks only.
+ * Fetches from /api/tasks (officer endpoint).
  */
-const TaskListPage = () => {
+const OfficerTaskListPage = () => {
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.get("/admin/tasks");
+      const data = await api.get("/tasks");
       setTasks(data.tasks || []);
     } catch (err) {
       showAlert.error(
@@ -32,6 +34,10 @@ const TaskListPage = () => {
     fetchTasks();
   }, [fetchTasks]);
 
+  const handleEdit = (task) => {
+    navigate("/my-tasks/create", { state: { editTask: task } });
+  };
+
   return (
     <div className="container-fluid px-3 px-md-4">
       <div className="account-approvals-page-header d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
@@ -39,31 +45,38 @@ const TaskListPage = () => {
           <span className="account-approvals-page-icon">
             <FaClipboardList aria-hidden />
           </span>
-          View all tasks
+          My tasks
         </h1>
-        <button
-          type="button"
-          className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
-          onClick={fetchTasks}
-          disabled={loading}
-        >
-          <span className={loading ? "spinner-border spinner-border-sm" : ""} aria-hidden />
-          {!loading && <span>Refresh</span>}
-        </button>
+        <div className="account-approvals-page-actions d-flex gap-2">
+          <button
+            type="button"
+            className="btn btn-sm task-btn-primary d-inline-flex align-items-center gap-2"
+            onClick={() => navigate("/my-tasks/create")}
+          >
+            <FaPlus aria-hidden />
+            Create task
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+            onClick={fetchTasks}
+            disabled={loading}
+          >
+            <span className={loading ? "spinner-border spinner-border-sm" : ""} aria-hidden />
+            {!loading && <span>Refresh</span>}
+          </button>
+        </div>
       </div>
 
       <TaskList
         tasks={tasks}
         loading={loading}
         onRefresh={fetchTasks}
-        viewOnly
-        apiBase="/admin/tasks"
-        showAssignToColumn
-        cardTitle="All tasks"
-        emptyMessage="No tasks yet. Personnel create their own tasks in My tasks."
+        onEdit={handleEdit}
+        isOfficer
       />
     </div>
   );
 };
 
-export default TaskListPage;
+export default OfficerTaskListPage;

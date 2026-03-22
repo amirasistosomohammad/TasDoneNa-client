@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { FaKey, FaSpinner, FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useSystemSettings } from "../../contexts/SystemSettingsContext.jsx";
 import { showAlert, showToast } from "../../services/notificationService.js";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
@@ -17,6 +18,7 @@ const VerifyEmail = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { verifyEmail, resendOtp } = useAuth();
+  const { appName, logoUrl, loading: settingsLoading, normalizeLogoUrl, logoTimestamp } = useSystemSettings();
 
   const theme = {
     primary: "#f54286",
@@ -117,8 +119,29 @@ const VerifyEmail = () => {
           style={{ backgroundColor: theme.backgroundWhite }}
         >
           <div className="text-center mb-4">
-            <img src={Logo} alt="TasDoneNa" style={{ height: "56px" }} />
-            <img src={TextLogo} alt="TasDoneNa" className="ms-2" style={{ height: "32px" }} />
+            {settingsLoading ? (
+              <div className="d-flex align-items-center justify-content-center gap-2">
+                <div className="login-logo-skeleton" style={{ width: "56px", height: "56px", borderRadius: "8px" }} />
+                <div className="login-text-logo-skeleton" style={{ width: "120px", height: "32px", borderRadius: "4px" }} />
+              </div>
+            ) : (
+              <>
+                {logoUrl ? (
+                  <img
+                    key={logoUrl + logoTimestamp}
+                    src={normalizeLogoUrl(logoUrl) + (logoUrl.includes('?') ? '&' : '?') + `t=${logoTimestamp}`}
+                    alt={appName}
+                    style={{ height: "56px", transition: "opacity 0.3s ease", animation: "fadeIn 0.4s ease-out" }}
+                    onError={(e) => {
+                      e.target.src = Logo;
+                    }}
+                  />
+                ) : (
+                  <img src={Logo} alt={appName} style={{ height: "56px" }} />
+                )}
+                <img src={TextLogo} alt={appName} className="ms-2" style={{ height: "32px" }} />
+              </>
+            )}
           </div>
 
           <h5 className="text-center mb-2" style={{ color: theme.textPrimary }}>

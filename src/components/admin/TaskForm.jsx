@@ -1,45 +1,119 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
+import SearchableComboBox from "../SearchableComboBox.jsx";
 
-const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
+function kraValuesEndpoint(apiBase) {
+  const base = (apiBase || "/admin/tasks").replace(/\/$/, "");
+  return `${base}/kra-values`;
+}
+
+const KRA_OPTIONS = [
+  "PERSONNEL ADMINISTRATION(30%)",
+  "PROPERTY CUSTODIANSHIP (30%)",
+  "GENERAL ADMINISTRATIVE SUPPORT(25%)",
+  "FINANCIAL MANAGEMENT(10%)",
+  "PLUS FACTOR 5%",
+];
+
+const INITIAL_FORM = {
+  title: "",
+  description: "",
+  mfo: "",
+  kra: "",
+  objective: "",
+  movs: [""],
+  due_date: "",
+  assigned_to: "",
+  priority: "medium",
+  timeline_start: "",
+  timeline_end: "",
+};
+
+function getInitialForm(task) {
+  if (!task) return { ...INITIAL_FORM };
+  return {
+    title: task.title || "",
+    description: task.description || "",
+    mfo: task.mfo || "",
+    kra: (task.kra && String(task.kra).trim()) ? String(task.kra).trim() : "",
+    objective: task.objective || "",
+    movs: Array.isArray(task.movs) && task.movs.length > 0 ? [...task.movs] : [""],
+    due_date: task.due_date ? task.due_date.slice(0, 10) : "",
+    assigned_to: task.assigned_to != null ? String(task.assigned_to) : "",
+    priority: task.priority || "medium",
+    timeline_start: task.timeline_start ? task.timeline_start.slice(0, 10) : "",
+    timeline_end: task.timeline_end ? task.timeline_end.slice(0, 10) : "",
+  };
+}
+
+function formEquals(a, b) {
+  const trim = (s) => (s || "").trim();
+  const movsA = (a.movs || [""]).map((m) => trim(m)).filter(Boolean);
+  const movsB = (b.movs || [""]).map((m) => trim(m)).filter(Boolean);
+  if (movsA.length !== movsB.length) return false;
+  for (let i = 0; i < movsA.length; i++) if (movsA[i] !== movsB[i]) return false;
+  return (
+    trim(a.title) === trim(b.title) &&
+    trim(a.description) === trim(b.description) &&
+    trim(a.mfo) === trim(b.mfo) &&
+    trim(a.kra) === trim(b.kra) &&
+    trim(a.objective) === trim(b.objective) &&
+    (a.due_date || "") === (b.due_date || "") &&
+    (a.assigned_to || "") === (b.assigned_to || "") &&
+    (a.priority || "medium") === (b.priority || "medium") &&
+    (a.timeline_start || "") === (b.timeline_start || "") &&
+    (a.timeline_end || "") === (b.timeline_end || "")
+  );
+}
+
+const TaskForm = ({ task, officers = [], onSuccess, onCancel, onDirtyChange, apiBase = "/admin/tasks", showAssignTo = true }) => {
   const isEdit = !!task;
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    mfo: "",
-    kra: "",
-    kra_weight: "",
-    objective: "",
-    movs: [""],
-    due_date: "",
-    cutoff_date: "",
-    assigned_to: "",
-    priority: "medium",
-    timeline_start: "",
-    timeline_end: "",
-  });
+  const [kraSuggestions, setKraSuggestions] = useState([]);
+  const [form, setForm] = useState(() => getInitialForm(task));
+
+  const hasHydratedRef = useRef(!task);
+  useEffect(() => {
+    setForm(getInitialForm(task));
+    hasHydratedRef.current = true;
+  }, [task]);
+
+  const initialForm = useMemo(() => getInitialForm(task), [task]);
+  const allowedKraSet = useMemo(() => {
+    const s = new Set(KRA_OPTIONS);
+    kraSuggestions.forEach((k) => {
+      if (typeof k === "string" && k.trim()) s.add(k.trim());
+    });
+    if (task?.kra && String(task.kra).trim()) s.add(String(task.kra).trim());
+    return s;
+  }, [task?.kra, kraSuggestions]);
+
+  const isDirty = hasHydratedRef.current && !formEquals(form, initialForm);
 
   useEffect(() => {
-    if (task) {
-      setForm({
-        title: task.title || "",
-        description: task.description || "",
-        mfo: task.mfo || "",
-        kra: task.kra || "",
-        kra_weight: task.kra_weight != null ? String(task.kra_weight) : "",
-        objective: task.objective || "",
-        movs: Array.isArray(task.movs) && task.movs.length > 0 ? [...task.movs] : [""],
-        due_date: task.due_date ? task.due_date.slice(0, 10) : "",
-        cutoff_date: task.cutoff_date ? task.cutoff_date.slice(0, 10) : "",
-        assigned_to: task.assigned_to != null ? String(task.assigned_to) : "",
-        priority: task.priority || "medium",
-        timeline_start: task.timeline_start ? task.timeline_start.slice(0, 10) : "",
-        timeline_end: task.timeline_end ? task.timeline_end.slice(0, 10) : "",
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get(kraValuesEndpoint(apiBase))
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data.kra_values) ? data.kra_values : [];
+        const trimmed = list
+          .filter((s) => typeof s === "string" && s.trim() !== "")
+          .map((s) => s.trim());
+        setKraSuggestions([...new Set(trimmed)]);
+      })
+      .catch(() => {
+        if (!cancelled) setKraSuggestions([]);
       });
-    }
-  }, [task]);
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase]);
 
   const update = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -70,29 +144,45 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
       return;
     }
 
+    if (!form.kra || !String(form.kra).trim()) {
+      showAlert.error("Validation", "KRA is required.");
+      return;
+    }
+
+    const kraTrim = String(form.kra).trim();
+    if (!allowedKraSet.has(kraTrim)) {
+      showAlert.error("Validation", "Please select a valid KRA from the list.");
+      return;
+    }
+
+    if (form.timeline_start && form.timeline_end && form.timeline_start > form.timeline_end) {
+      showAlert.error("Validation", "Timeline start date must be before or equal to end date.");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() || null,
         mfo: form.mfo.trim() || null,
-        kra: form.kra.trim() || null,
-        kra_weight: form.kra_weight ? parseFloat(form.kra_weight) : null,
+        kra: form.kra.trim(),
         objective: form.objective.trim() || null,
         movs: form.movs.filter((m) => m.trim()).length > 0 ? form.movs.filter((m) => m.trim()) : null,
         due_date: form.due_date || null,
-        cutoff_date: form.cutoff_date || null,
-        assigned_to: form.assigned_to ? parseInt(form.assigned_to, 10) : null,
         priority: form.priority,
         timeline_start: form.timeline_start || null,
         timeline_end: form.timeline_end || null,
       };
+      if (showAssignTo) {
+        payload.assigned_to = form.assigned_to ? parseInt(form.assigned_to, 10) : null;
+      }
 
       if (isEdit) {
-        await api.put(`/admin/tasks/${task.id}`, payload);
+        await api.put(`${apiBase}/${task.id}`, payload);
         showToast.success("Task updated successfully.");
       } else {
-        await api.post("/admin/tasks", payload);
+        await api.post(apiBase, payload);
         showToast.success("Task created successfully.");
       }
       onSuccess?.();
@@ -164,33 +254,19 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
             </div>
             <div className="col-md-6">
               <label htmlFor="task-kra" className="account-approvals-action-label">
-                KRA <span className="text-muted">(optional)</span>
+                KRA <span className="text-danger">*</span>
               </label>
-              <input
+              <SearchableComboBox
                 id="task-kra"
-                type="text"
-                className="form-control"
-                placeholder="Key Result Area"
+                name="kra"
                 value={form.kra}
-                onChange={(e) => update("kra", e.target.value)}
+                onChange={(v) => update("kra", v)}
+                pinnedOptions={KRA_OPTIONS}
+                otherOptions={kraSuggestions}
+                placeholder="Please select a KRA from the list"
                 disabled={loading}
-              />
-            </div>
-            <div className="col-md-6">
-              <label htmlFor="task-kra-weight" className="account-approvals-action-label">
-                KRA weight (%) <span className="text-muted">(optional)</span>
-              </label>
-              <input
-                id="task-kra-weight"
-                type="number"
-                className="form-control"
-                min="0"
-                max="100"
-                step="0.01"
-                placeholder="e.g. 15"
-                value={form.kra_weight}
-                onChange={(e) => update("kra_weight", e.target.value)}
-                disabled={loading}
+                allowCustomValue={false}
+                required
               />
             </div>
             <div className="col-md-6">
@@ -260,7 +336,7 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
                 + Add MOV
               </button>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-6">
               <label htmlFor="task-due-date" className="account-approvals-action-label">
                 Due date <span className="text-muted">(optional)</span>
               </label>
@@ -271,40 +347,30 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
                 value={form.due_date}
                 onChange={(e) => update("due_date", e.target.value)}
                 disabled={loading}
+                aria-label="Due date"
               />
             </div>
-            <div className="col-md-4">
-              <label htmlFor="task-cutoff-date" className="account-approvals-action-label">
-                Cutoff date <span className="text-muted">(optional)</span>
-              </label>
-              <input
-                id="task-cutoff-date"
-                type="date"
-                className="form-control"
-                value={form.cutoff_date}
-                onChange={(e) => update("cutoff_date", e.target.value)}
-                disabled={loading}
-              />
-            </div>
-            <div className="col-md-4">
-              <label htmlFor="task-assigned-to" className="account-approvals-action-label">
-                Assign to
-              </label>
-              <select
-                id="task-assigned-to"
-                className="form-select"
-                value={form.assigned_to}
-                onChange={(e) => update("assigned_to", e.target.value)}
-                disabled={loading}
-              >
-                <option value="">All officers</option>
-                {(officers || []).map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {showAssignTo && (
+              <div className="col-md-6">
+                <label htmlFor="task-assigned-to" className="account-approvals-action-label">
+                  Assign to
+                </label>
+                <select
+                  id="task-assigned-to"
+                  className="form-select"
+                  value={form.assigned_to}
+                  onChange={(e) => update("assigned_to", e.target.value)}
+                  disabled={loading}
+                >
+                  <option value="">All officers</option>
+                  {officers.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div className="col-md-6">
               <label htmlFor="task-timeline-start" className="account-approvals-action-label">
                 Timeline start <span className="text-muted">(optional)</span>
@@ -314,8 +380,16 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
                 type="date"
                 className="form-control"
                 value={form.timeline_start}
-                onChange={(e) => update("timeline_start", e.target.value)}
+                max={form.timeline_end || undefined}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  update("timeline_start", value);
+                  if (form.timeline_end && value && value > form.timeline_end) {
+                    update("timeline_end", value);
+                  }
+                }}
                 disabled={loading}
+                aria-label="Timeline start date"
               />
             </div>
             <div className="col-md-6">
@@ -327,9 +401,21 @@ const TaskForm = ({ task, officers, onSuccess, onCancel }) => {
                 type="date"
                 className="form-control"
                 value={form.timeline_end}
-                onChange={(e) => update("timeline_end", e.target.value)}
+                min={form.timeline_start || undefined}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (form.timeline_start && value && value < form.timeline_start) {
+                    showAlert.warning("Validation", "Timeline end must be after or equal to start date.");
+                    return;
+                  }
+                  update("timeline_end", value);
+                }}
                 disabled={loading}
+                aria-label="Timeline end date"
               />
+              {form.timeline_start && form.timeline_end && form.timeline_start > form.timeline_end && (
+                <div className="small text-danger mt-1">End date must be after start date</div>
+              )}
             </div>
           </div>
           <div className="task-form-actions d-flex gap-2 mt-4">

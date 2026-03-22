@@ -7,11 +7,23 @@ import React, {
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import { api } from "../services/api.js";
 import Logo from "../assets/logo.png";
 import TextLogo from "../assets/logo-text.png";
 import LogoutConfirmModal from "../components/LogoutConfirmModal.jsx";
 
-const Topbar = ({ onToggleSidebar }) => {
+const normalizeLogoUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  // Laravel Storage::url() returns paths like /storage/path/to/file
+  // We need to prepend the base URL
+  const baseUrl = api.baseUrl.replace(/\/$/, "");
+  const normalized = `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
+  console.log("Topbar normalizing logo URL:", { original: url, normalized, baseUrl });
+  return normalized;
+};
+
+const Topbar = ({ onToggleSidebar, appName, logoUrl, settingsLoading }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -23,6 +35,22 @@ const Topbar = ({ onToggleSidebar }) => {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, right: 0, left: undefined, maxWidth: 320 });
   const closeTimerRef = useRef(null);
+  const [logoTimestamp, setLogoTimestamp] = useState(Date.now());
+  const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
+
+  // Update timestamp when logoUrl changes to force image reload
+  useEffect(() => {
+    if (logoUrl) {
+      setLogoTimestamp(Date.now());
+    }
+  }, [logoUrl]);
+
+  // Update timestamp when user avatar changes (e.g. after profile photo update)
+  useEffect(() => {
+    if (user?.avatar_url) {
+      setAvatarTimestamp(Date.now());
+    }
+  }, [user?.avatar_url]);
 
   const closeUserMenu = useCallback(() => {
     if (!isUserMenuOpen || isUserMenuClosing) return;
@@ -111,10 +139,13 @@ const Topbar = ({ onToggleSidebar }) => {
   };
 
   const handleLogoutConfirm = async () => {
-    setShowLogoutConfirm(false);
-    closeUserMenu();
-    await logout();
-    navigate("/login");
+    try {
+      await logout();
+    } finally {
+      setShowLogoutConfirm(false);
+      closeUserMenu();
+      navigate("/login");
+    }
   };
 
   const handleLogoutCancel = () => {
@@ -141,16 +172,37 @@ const Topbar = ({ onToggleSidebar }) => {
     >
       {/* Brand: logo + text, aligned with sidebar spacing via .topbar-brand-wrap */}
       <div className="navbar-brand topbar-brand-wrap d-flex align-items-center">
-        <img
-          src={Logo}
-          alt="TasDoneNa"
-          className="topbar-icon-logo me-2"
-        />
-        <img
-          src={TextLogo}
-          alt="TasDoneNa"
-          className="topbar-text-logo"
-        />
+        {settingsLoading ? (
+          <>
+            <div className="topbar-logo-skeleton topbar-icon-logo-skeleton me-2" />
+            <div className="topbar-logo-skeleton topbar-text-logo-skeleton" />
+          </>
+        ) : (
+          <>
+            {logoUrl ? (
+              <img
+                key={logoUrl}
+                src={normalizeLogoUrl(logoUrl) + (logoUrl.includes('?') ? '&' : '?') + `t=${logoTimestamp}`}
+                alt={appName || "TasDoneNa"}
+                className="topbar-icon-logo me-2 topbar-logo-fade-in"
+                onError={(e) => {
+                  e.target.src = Logo;
+                }}
+              />
+            ) : (
+              <img
+                src={Logo}
+                alt={appName || "TasDoneNa"}
+                className="topbar-icon-logo me-2 topbar-logo-fade-in"
+              />
+            )}
+            <img
+              src={TextLogo}
+              alt={appName || "TasDoneNa"}
+              className="topbar-text-logo topbar-logo-fade-in"
+            />
+          </>
+        )}
       </div>
 
       {/* Sidebar Toggle */}
@@ -180,8 +232,24 @@ const Topbar = ({ onToggleSidebar }) => {
             }}
           >
             <div className="position-relative me-2">
+              {user?.avatar_url ? (
+                <img
+                  src={normalizeLogoUrl(user.avatar_url) + (user.avatar_url.includes("?") ? "&" : "?") + `t=${avatarTimestamp}`}
+                  alt=""
+                  className="rounded-circle"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    objectFit: "cover",
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextElementSibling?.classList.remove("d-none");
+                  }}
+                />
+              ) : null}
               <div
-                className="bg-light rounded-circle d-flex align-items-center justify-content-center"
+                className={`bg-light rounded-circle d-flex align-items-center justify-content-center ${user?.avatar_url ? "d-none" : ""}`}
                 style={{
                   width: "32px",
                   height: "32px",
@@ -252,6 +320,21 @@ const Topbar = ({ onToggleSidebar }) => {
                   <li>
                     <hr className="dropdown-divider" />
                   </li>
+                  {user?.role === "officer" && (
+                    <li>
+                      <button
+                        className="dropdown-item custom-dropdown-item"
+                        type="button"
+                        onClick={() => {
+                          closeUserMenu();
+                          navigate("/profile");
+                        }}
+                      >
+                        <i className="fas fa-user me-2" />
+                        Profile
+                      </button>
+                    </li>
+                  )}
                   <li>
                     <button
                       className="dropdown-item custom-dropdown-item logout-item"

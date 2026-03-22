@@ -1,6 +1,13 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import {
+  createBrowserRouter,
+  createRoutesFromElements,
+  RouterProvider,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext.jsx";
+import { SystemSettingsProvider } from "./contexts/SystemSettingsContext.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PublicRoute from "./components/PublicRoute.jsx";
 import Login from "./pages/public/Login.jsx";
@@ -12,17 +19,28 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AccountApprovals from "./pages/admin/AccountApprovals.jsx";
 import Officers from "./pages/admin/Officers.jsx";
 import TaskListPage from "./pages/admin/TaskListPage.jsx";
-import CreateTaskPage from "./pages/admin/CreateTaskPage.jsx";
+import Settings from "./pages/admin/Settings.jsx";
+import ActivityLogs from "./pages/admin/ActivityLogs.jsx";
+import MonitorOfficers from "./pages/admin/MonitorOfficers.jsx";
+import AdminAccomplishmentReportsPage from "./pages/admin/AccomplishmentReportsPage.jsx";
+import AdminAccomplishmentReportDetailPage from "./pages/admin/AccomplishmentReportDetailPage.jsx";
 import Layout from "./layout/Layout.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
+import OfficerRoute from "./components/OfficerRoute.jsx";
+import MyTasksPage from "./pages/personnel/MyTasksPage.jsx";
+import CreateMyTaskPage from "./pages/personnel/CreateMyTaskPage.jsx";
+import TaskDetailPage from "./pages/personnel/TaskDetailPage.jsx";
+import AccomplishmentReportsPage from "./pages/personnel/AccomplishmentReportsPage.jsx";
+import AccomplishmentReportDetailPage from "./pages/personnel/AccomplishmentReportDetailPage.jsx";
+import Profile from "./pages/personnel/Profile.jsx";
+import Calendar from "./pages/personnel/Calendar.jsx";
+import FilesArchive from "./pages/personnel/FilesArchive.jsx";
 import { ToastContainer } from "./services/notificationService.js";
 
-const App = () => {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <>
+      <Route path="/" element={<Navigate to="/login" replace />} />
           <Route
             path="/login"
             element={
@@ -90,6 +108,14 @@ const App = () => {
               }
             />
             <Route
+              path="monitor-officers"
+              element={
+                <AdminRoute>
+                  <MonitorOfficers />
+                </AdminRoute>
+              }
+            />
+            <Route
               path="task-management"
               element={
                 <AdminRoute>
@@ -98,19 +124,115 @@ const App = () => {
               }
             />
             <Route
-              path="task-management/create"
+              path="settings"
               element={
                 <AdminRoute>
-                  <CreateTaskPage />
+                  <Settings />
                 </AdminRoute>
+              }
+            />
+            <Route
+              path="activity-logs"
+              element={
+                <AdminRoute>
+                  <ActivityLogs />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="admin/accomplishment-reports"
+              element={
+                <AdminRoute>
+                  <AdminAccomplishmentReportsPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="admin/accomplishment-reports/:id"
+              element={
+                <AdminRoute>
+                  <AdminAccomplishmentReportDetailPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="my-tasks"
+              element={
+                <OfficerRoute>
+                  <MyTasksPage />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="my-tasks/create"
+              element={
+                <OfficerRoute>
+                  <CreateMyTaskPage />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="my-tasks/:id"
+              element={
+                <OfficerRoute>
+                  <TaskDetailPage />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="accomplishment-reports"
+              element={
+                <OfficerRoute>
+                  <AccomplishmentReportsPage />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="accomplishment-reports/:id"
+              element={
+                <OfficerRoute>
+                  <AccomplishmentReportDetailPage />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <OfficerRoute>
+                  <Profile />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="calendar"
+              element={
+                <OfficerRoute>
+                  <Calendar />
+                </OfficerRoute>
+              }
+            />
+            <Route
+              path="files-archive"
+              element={
+                <OfficerRoute>
+                  <FilesArchive />
+                </OfficerRoute>
               }
             />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+    </>
+  )
+);
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <SystemSettingsProvider>
+        <RouterProvider router={router} />
         <ToastContainer />
-      </BrowserRouter>
+      </SystemSettingsProvider>
     </AuthProvider>
   );
 };

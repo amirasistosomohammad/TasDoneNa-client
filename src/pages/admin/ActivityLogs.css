@@ -1,0 +1,208 @@
+/* Activity logs — TasDoneNa color scheme (accent: #f54286), consistent with Account Approvals */
+
+.activity-logs-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767.98px) {
+  .activity-logs-page {
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .activity-logs-page {
+    padding-top: 1rem;
+  }
+}
+
+.activity-logs-card {
+  overflow: hidden;
+}
+
+/* Date inputs in filter row — match Personnel Directory select sizing */
+.account-approvals-filter-row .form-control-sm[type="date"] {
+  min-width: 8.5rem;
+}
+
+.activity-logs-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #4a5568);
+  font-size: 0.9375rem;
+}
+
+.activity-logs-loading .spinner {
+  font-size: 1.25rem;
+}
+
+.activity-logs-table-container {
+  width: 100%;
+  min-width: 0;
+}
+
+.activity-logs-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.activity-logs-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.activity-logs-table thead th {
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-muted, #5a6c7d);
+  background: var(--sidebar-bg, #f7f8fa);
+  border-bottom: 1px solid var(--sidebar-border, #e2e8f0);
+  padding: 0.75rem;
+}
+
+.activity-logs-table tbody td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--sidebar-border, #e2e8f0);
+  color: var(--sidebar-text, #1e3a5f);
+  vertical-align: top;
+}
+
+.activity-logs-table tbody tr:hover td {
+  background: rgba(245, 66, 134, 0.04);
+}
+
+.activity-logs-col-actions {
+  width: 4.25rem;
+}
+
+.activity-logs-btn-details {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--accent-color, #f54286);
+  background: var(--accent-color, #f54286) !important;
+  color: #fff !important;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.activity-logs-btn-details:hover:not(:disabled) {
+  background: #c01457 !important;
+  border-color: #c01457 !important;
+  transform: translateY(-1px);
+}
+
+.activity-logs-actor-name {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 18rem;
+}
+
+.activity-logs-actor-email {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #4a5568);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 18rem;
+}
+
+.activity-logs-desc {
+  color: var(--text-secondary, #334155);
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.activity-logs-action-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.activity-logs-action-primary {
+  background: rgba(245, 66, 134, 0.12);
+  color: var(--accent-color, #f54286);
+  border-color: rgba(245, 66, 134, 0.25);
+}
+
+.activity-logs-action-success {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.activity-logs-action-danger {
+  background: rgba(185, 28, 28, 0.08);
+  color: #b91c1c;
+  border-color: rgba(185, 28, 28, 0.18);
+}
+
+.activity-logs-action-muted {
+  background: rgba(100, 116, 139, 0.08);
+  color: #64748b;
+  border-color: rgba(100, 116, 139, 0.18);
+}
+
+.activity-logs-action-accent {
+  background: rgba(234, 88, 12, 0.12);
+  color: #ea580c;
+  border-color: rgba(234, 88, 12, 0.22);
+}
+
+@media (max-width: 991.98px) {
+  .activity-logs-table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .activity-logs-table {
+    min-width: 600px;
+    font-size: 0.8125rem;
+  }
+
+  .activity-logs-table thead th,
+  .activity-logs-table tbody td {
+    padding: 0.5rem 0.625rem;
+  }
+
+  .activity-logs-desc {
+    max-width: 16rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .activity-logs-table {
+    min-width: 520px;
+  }
+
+  .activity-logs-actor-name,
+  .activity-logs-actor-email {
+    max-width: 12rem;
+  }
+}

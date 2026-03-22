@@ -1,9 +1,9 @@
-import React, { useMemo, useState, useEffect } from "react";
-import Swal from "sweetalert2";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
-import { FaEye, FaEdit, FaTrash, FaSearch } from "react-icons/fa";
+import { FaEye, FaEdit, FaTrash, FaSearch, FaCheckCircle, FaSyncAlt, FaUndo } from "react-icons/fa";
 import TaskDetailsModal from "./TaskDetailsModal.jsx";
+import TaskConfirmModal from "../TaskConfirmModal.jsx";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
@@ -21,11 +21,10 @@ const statusBadgeClass = (status) => {
   switch (status) {
     case "completed":
       return "officers-status-badge officers-status-approved";
-    case "in_progress":
-      return "officers-status-badge officers-status-pending";
     case "cancelled":
       return "officers-status-badge officers-status-rejected";
     case "pending":
+    case "in_progress": // Legacy: treat as pending
     default:
       return "officers-status-badge officers-status-pending";
   }
@@ -43,7 +42,7 @@ const priorityBadgeClass = (priority) => {
   }
 };
 
-const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
+const TaskList = ({ tasks, loading, onRefresh, onEdit, onView, onStatusChange, viewOnly = false, apiBase = "/admin/tasks", showAssignToColumn = true, cardTitle = "All tasks", emptyMessage }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [kraFilter, setKraFilter] = useState("");
@@ -52,6 +51,7 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
   const [detailTask, setDetailTask] = useState(null);
   const [detailModalClosing, setDetailModalClosing] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
+  const [deleteConfirmTask, setDeleteConfirmTask] = useState(null);
 
   const filteredTasks = useMemo(() => {
     let base = tasks || [];
@@ -96,33 +96,30 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
     }, 200);
   };
 
-  const handleView = (t) => setDetailTask(t);
+  const handleView = (t) => {
+    if (onView) {
+      onView(t);
+    } else {
+      setDetailTask(t);
+    }
+  };
 
   const handleEditClick = (t) => {
     closeDetailModal();
     onEdit?.(t);
   };
 
-  const handleDelete = async (t) => {
-    const result = await Swal.fire({
-      title: "Delete task?",
-      text: `"${t.title}" will be permanently removed. This cannot be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#dc3545",
-      cancelButtonColor: "#6c757d",
-      background: "#fff",
-      color: "#243047",
-    });
+  const handleDeleteClick = (t) => setDeleteConfirmTask(t);
 
-    if (!result.isConfirmed) return;
+  const closeDeleteModal = useCallback(() => setDeleteConfirmTask(null), []);
 
-    setActionLoading(t.id);
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmTask) return;
+    setActionLoading(deleteConfirmTask.id);
     try {
-      await api.delete(`/admin/tasks/${t.id}`);
+      await api.delete(`${apiBase}/${deleteConfirmTask.id}`);
       showToast.success("Task deleted successfully.");
+      closeDeleteModal();
       onRefresh?.();
     } catch (err) {
       showAlert.error(
@@ -135,8 +132,9 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
   };
 
   const displayStatus = (status) => {
-    if (status === "in_progress") return "In progress";
-    return (status || "pending").replace(/_/g, " ");
+    const s = status || "pending";
+    if (s === "in_progress") return "Pending"; // Legacy: in_progress removed, treat as Pending
+    return s.replace(/_/g, " ");
   };
 
   const displayPriority = (priority) => {
@@ -147,7 +145,7 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
     <>
       <div className="card border-0 shadow-sm account-approvals-card">
         <div className="card-header bg-white border-bottom account-approvals-card-header">
-          <h6 className="mb-0 fw-semibold account-approvals-card-title">All tasks</h6>
+          <h6 className="mb-0 fw-semibold account-approvals-card-title">{cardTitle}</h6>
           <p className="small text-muted mb-0 mt-1">
             Browse and manage tasks. Filter by status or KRA, edit, or delete tasks.
           </p>
@@ -198,7 +196,6 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
                 >
                   <option value="all">All</option>
                   <option value="pending">Pending</option>
-                  <option value="in_progress">In progress</option>
                   <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
@@ -238,7 +235,7 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
           ) : !tasks || tasks.length === 0 ? (
             <div className="text-center py-5 px-3">
               <p className="text-muted mb-0">No tasks yet.</p>
-              <p className="small text-muted mt-1">Create your first task using the Create task link in the sidebar.</p>
+              <p className="small text-muted mt-1">{emptyMessage || "Create your first task using the Create task link in the sidebar."}</p>
             </div>
           ) : filteredTasks.length === 0 ? (
             <div className="account-approvals-empty-state">
@@ -247,18 +244,20 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
               </div>
               <h3 className="account-approvals-empty-state-title">No matches found</h3>
               <p className="account-approvals-empty-state-text">
-                No tasks match your filters. Try different keywords or clear filters.
+                No tasks match your filters. Try different keywords or reset filters to view all tasks.
               </p>
               <button
                 type="button"
-                className="btn btn-sm account-approvals-empty-state-btn"
+                className="btn account-approvals-empty-state-btn"
                 onClick={() => {
                   setSearchQuery("");
                   setStatusFilter("all");
                   setKraFilter("");
                 }}
+                aria-label="Reset filters to show all tasks"
               >
-                Clear filters
+                <FaUndo className="sb-empty-state-btn-icon" aria-hidden />
+                Reset filters
               </button>
             </div>
           ) : (
@@ -277,7 +276,7 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
                       <th scope="col">KRA</th>
                       <th scope="col">Status</th>
                       <th scope="col">Priority</th>
-                      <th scope="col">Assigned to</th>
+                      {showAssignToColumn && <th scope="col">Assigned to</th>}
                       <th scope="col">Due date</th>
                     </tr>
                   </thead>
@@ -298,29 +297,33 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
                             >
                               <FaEye aria-hidden />
                             </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-secondary account-approvals-btn-icon"
-                              onClick={() => onEdit?.(t)}
-                              title="Edit"
-                              aria-label="Edit"
-                            >
-                              <FaEdit aria-hidden />
-                            </button>
-                            <button
-                              type="button"
-                              className="btn btn-sm btn-danger account-approvals-btn-icon"
-                              onClick={() => handleDelete(t)}
-                              disabled={actionLoading !== null}
-                              title="Delete"
-                              aria-label="Delete"
-                            >
-                              {actionLoading === t.id ? (
-                                <span className="spinner-border spinner-border-sm" aria-hidden />
-                              ) : (
-                                <FaTrash aria-hidden />
-                              )}
-                            </button>
+                            {!viewOnly && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-secondary account-approvals-btn-icon"
+                                  onClick={() => onEdit?.(t)}
+                                  title="Edit"
+                                  aria-label="Edit"
+                                >
+                                  <FaEdit aria-hidden />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger account-approvals-btn-icon"
+                                  onClick={() => handleDeleteClick(t)}
+                                  disabled={actionLoading !== null}
+                                  title="Delete"
+                                  aria-label="Delete"
+                                >
+                                  {actionLoading === t.id ? (
+                                    <span className="spinner-border spinner-border-sm" aria-hidden />
+                                  ) : (
+                                    <FaTrash aria-hidden />
+                                  )}
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                         <td className="account-approvals-cell-text fw-semibold" title={t.title}>
@@ -330,14 +333,44 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
                           {t.kra || "—"}
                         </td>
                         <td>
-                          <span className={statusBadgeClass(t.status)}>{displayStatus(t.status)}</span>
+                          <div className="d-flex align-items-center gap-2">
+                            <span className={statusBadgeClass(t.status)}>{displayStatus(t.status)}</span>
+                            {!viewOnly && onStatusChange && (
+                              <>
+                                {t.status !== "completed" && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-success"
+                                    onClick={() => onStatusChange(t, "completed")}
+                                    title="Mark as completed"
+                                    aria-label="Mark as completed"
+                                  >
+                                    <FaCheckCircle aria-hidden />
+                                  </button>
+                                )}
+                                {t.status === "completed" && (
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm btn-warning"
+                                    onClick={() => onStatusChange(t, "pending")}
+                                    title="Reopen task"
+                                    aria-label="Reopen task"
+                                  >
+                                    <FaSyncAlt aria-hidden />
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <span className={priorityBadgeClass(t.priority)}>{displayPriority(t.priority)}</span>
                         </td>
-                        <td className="account-approvals-cell-text">
-                          {t.assignee ? t.assignee.name : "All officers"}
-                        </td>
+                        {showAssignToColumn && (
+                          <td className="account-approvals-cell-text">
+                            {t.assignee ? t.assignee.name : "All officers"}
+                          </td>
+                        )}
                         <td className="account-approvals-cell-text small text-muted">
                           {formatDate(t.due_date)}
                         </td>
@@ -417,7 +450,7 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
         </div>
       </div>
 
-      {detailTask && (
+      {detailTask && !onView && (
         <TaskDetailsModal
           task={detailTask}
           closing={detailModalClosing}
@@ -425,6 +458,20 @@ const TaskList = ({ tasks, loading, onRefresh, onEdit }) => {
           onEdit={() => handleEditClick(detailTask)}
         />
       )}
+
+      <TaskConfirmModal
+        isOpen={!!deleteConfirmTask}
+        title="Delete task?"
+        subtitle={deleteConfirmTask?.title}
+        bodyText={`"${deleteConfirmTask?.title || ""}" will be permanently removed. This cannot be undone.`}
+        confirmLabel="Yes, delete"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={closeDeleteModal}
+        isLoading={actionLoading === deleteConfirmTask?.id}
+        loadingLabel="Deleting…"
+      />
     </>
   );
 };

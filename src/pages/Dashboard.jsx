@@ -10,7 +10,18 @@ import {
   FaUserCheck,
   FaClipboardList,
   FaSyncAlt,
+  FaPlus,
+  FaFileAlt,
+  FaUpload,
 } from "react-icons/fa";
+
+const getMonthName = (month) => {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  return months[month - 1] || "";
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -20,6 +31,11 @@ const Dashboard = () => {
 
   const [pendingCount, setPendingCount] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [recentTasks, setRecentTasks] = useState([]);
+  const [recentReports, setRecentReports] = useState([]);
+  const [recentLoading, setRecentLoading] = useState(true);
 
   const fetchPendingCount = async () => {
     if (!isAdmin) return;
@@ -31,18 +47,76 @@ const Dashboard = () => {
     }
   };
 
+  const fetchStatistics = async () => {
+    if (isPending) return;
+    setStatsLoading(true);
+    try {
+      const endpoint = isAdmin ? "/admin/tasks/statistics" : "/tasks/statistics";
+      const data = await api.get(endpoint);
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to load statistics:", err);
+      setStats({
+        total_tasks: 0,
+        pending: 0,
+        completed: 0,
+        due_this_week: 0,
+        overdue: 0,
+        completed_this_month: 0,
+      });
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const fetchRecentActivity = async () => {
+    if (isPending) return;
+    setRecentLoading(true);
+    try {
+      if (isAdmin) {
+        // Admin: Get recent reports
+        const reportsData = await api.get("/admin/accomplishment-reports");
+        const reports = (reportsData.reports || []).slice(0, 5);
+        setRecentReports(reports);
+        setRecentTasks([]);
+      } else {
+        // Personnel: Get recent tasks and reports
+        const [tasksData, reportsData] = await Promise.all([
+          api.get("/tasks").catch(() => ({ tasks: [] })),
+          api.get("/accomplishment-reports").catch(() => ({ reports: [] })),
+        ]);
+        const tasks = (tasksData.tasks || []).slice(0, 5);
+        const reports = (reportsData.reports || []).slice(0, 3);
+        setRecentTasks(tasks);
+        setRecentReports(reports);
+      }
+    } catch (err) {
+      console.error("Failed to load recent activity:", err);
+      setRecentTasks([]);
+      setRecentReports([]);
+    } finally {
+      setRecentLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) fetchPendingCount();
+    fetchStatistics();
+    fetchRecentActivity();
     const handler = (e) => {
       if (e.detail?.count !== undefined) setPendingCount(e.detail.count);
     };
     window.addEventListener("account-approvals-updated", handler);
     return () => window.removeEventListener("account-approvals-updated", handler);
-  }, [isAdmin]);
+  }, [isAdmin, isPending]);
 
   const handleRefresh = () => {
     setRefreshing(true);
-    fetchPendingCount().finally(() => setRefreshing(false));
+    Promise.all([
+      isAdmin ? fetchPendingCount() : Promise.resolve(),
+      fetchStatistics(),
+      fetchRecentActivity(),
+    ]).finally(() => setRefreshing(false));
   };
 
   return (
@@ -111,28 +185,42 @@ const Dashboard = () => {
             )}
             <div className="dashboard-stat-block">
               <div className="dashboard-stat-block-label">Total tasks</div>
-              <div className="dashboard-stat-block-value">0</div>
+              <div className="dashboard-stat-block-value">
+                {statsLoading ? "—" : stats?.total_tasks || 0}
+              </div>
+            </div>
+            <div className="dashboard-stat-block">
+              <div className="dashboard-stat-block-label">Pending</div>
+              <div className="dashboard-stat-block-value">
+                {statsLoading ? "—" : stats?.pending || 0}
+              </div>
+            </div>
+            <div className="dashboard-stat-block">
+              <div className="dashboard-stat-block-label">Completed</div>
+              <div className="dashboard-stat-block-value">
+                {statsLoading ? "—" : stats?.completed || 0}
+              </div>
             </div>
             <div className="dashboard-stat-block">
               <div className="dashboard-stat-block-label">Due this week</div>
-              <div className="dashboard-stat-block-value">0</div>
+              <div className="dashboard-stat-block-value">
+                {statsLoading ? "—" : stats?.due_this_week || 0}
+              </div>
             </div>
             <div className="dashboard-stat-block">
               <div className="dashboard-stat-block-label">Overdue tasks</div>
-              <div className="dashboard-stat-block-value">0</div>
+              <div className="dashboard-stat-block-value">
+                {statsLoading ? "—" : (stats?.overdue || 0)}
+              </div>
             </div>
-            <div className="dashboard-stat-block">
-              <div className="dashboard-stat-block-label">Approved MOVs</div>
-              <div className="dashboard-stat-block-value">0</div>
-            </div>
-            <div className="dashboard-stat-block">
-              <div className="dashboard-stat-block-label">Pending reviews</div>
-              <div className="dashboard-stat-block-value">0</div>
-            </div>
-            <div className="dashboard-stat-block">
-              <div className="dashboard-stat-block-label">Completed this month</div>
-              <div className="dashboard-stat-block-value">0</div>
-            </div>
+            {!isAdmin && (
+              <div className="dashboard-stat-block">
+                <div className="dashboard-stat-block-label">Completed this month</div>
+                <div className="dashboard-stat-block-value">
+                  {statsLoading ? "—" : stats?.completed_this_month || 0}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -149,9 +237,80 @@ const Dashboard = () => {
             </div>
             <div className="card-body">
               <ul className="list-unstyled mb-0 small dashboard-quick-actions-list">
-                <li className="py-2">Create a new task (coming soon)</li>
-                <li className="py-2">Add monthly accomplishment report (coming soon)</li>
-                <li className="py-2">Upload MOV for a task (coming soon)</li>
+                {!isAdmin && (
+                  <>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/my-tasks/create")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaPlus className="me-2" />
+                        Create a new task
+                      </button>
+                    </li>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/accomplishment-reports")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaFileAlt className="me-2" />
+                        Generate accomplishment report
+                      </button>
+                    </li>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/my-tasks")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaTasks className="me-2" />
+                        View my tasks
+                      </button>
+                    </li>
+                  </>
+                )}
+                {isAdmin && (
+                  <>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/account-approvals")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaUserCheck className="me-2" />
+                        Review pending approvals
+                      </button>
+                    </li>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/admin/accomplishment-reports")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaFileAlt className="me-2" />
+                        Review accomplishment reports
+                      </button>
+                    </li>
+                    <li className="py-2">
+                      <button
+                        type="button"
+                        className="btn btn-link p-0 text-start text-decoration-none"
+                        onClick={() => navigate("/task-management")}
+                        style={{ color: "inherit" }}
+                      >
+                        <FaTasks className="me-2" />
+                        View all tasks
+                      </button>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
           </div>
@@ -161,13 +320,81 @@ const Dashboard = () => {
             <div className="card-header bg-white border-bottom account-approvals-card-header">
               <h6 className="mb-0 fw-semibold account-approvals-card-title">Recent activity</h6>
               <p className="small text-muted mb-0 mt-1">
-                Once tasks are added, your latest updates will appear here.
+                Your latest tasks and reports.
               </p>
             </div>
             <div className="card-body">
-              <p className="small text-muted mb-0">
-                No recent activity yet. Start by creating a task or submitting a monthly report.
-              </p>
+              {recentLoading ? (
+                <div className="text-center py-3">
+                  <div className="spinner-border spinner-border-sm text-primary" role="status" aria-label="Loading" />
+                </div>
+              ) : recentTasks.length === 0 && recentReports.length === 0 ? (
+                <p className="small text-muted mb-0">
+                  No recent activity yet. Start by creating a task or submitting a monthly report.
+                </p>
+              ) : (
+                <div className="list-group list-group-flush">
+                  {!isAdmin && recentTasks.length > 0 && (
+                    <>
+                      <div className="small fw-semibold text-muted mb-2">Recent Tasks</div>
+                      {recentTasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className="list-group-item px-0 py-2 border-0 border-bottom"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => navigate(`/my-tasks/${task.id}`)}
+                          onKeyDown={(e) => e.key === "Enter" && navigate(`/my-tasks/${task.id}`)}
+                        >
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <div className="small fw-semibold">{task.title}</div>
+                              <div className="small text-muted">
+                                {task.kra || "No KRA"} • {task.status === "completed" ? "Completed" : "Pending"}
+                              </div>
+                            </div>
+                            <span className={`badge ${task.status === "completed" ? "bg-success" : "bg-secondary"}`}>
+                              {task.status === "completed" ? "Done" : "Pending"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {recentReports.length > 0 && (
+                    <>
+                      <div className="small fw-semibold text-muted mb-2 mt-3">
+                        {isAdmin ? "Recent Reports" : "Recent Reports"}
+                      </div>
+                      {recentReports.map((report) => (
+                        <div
+                          key={report.id}
+                          className="list-group-item px-0 py-2 border-0 border-bottom"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => navigate(isAdmin ? `/admin/accomplishment-reports/${report.id}` : `/accomplishment-reports/${report.id}`)}
+                          onKeyDown={(e) => e.key === "Enter" && navigate(isAdmin ? `/admin/accomplishment-reports/${report.id}` : `/accomplishment-reports/${report.id}`)}
+                        >
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <div className="small fw-semibold">
+                                {isAdmin && report.user ? `${report.user.name} - ` : ""}
+                                {getMonthName(report.month)} {report.year}
+                              </div>
+                              <div className="small text-muted">
+                                {report.tasks_summary?.length || 0} KRA(s) • {report.status === "noted" ? "Approved" : report.status === "submitted" ? "Submitted" : "Draft"}
+                              </div>
+                            </div>
+                            <span className={`badge ${report.status === "noted" ? "bg-success" : report.status === "submitted" ? "bg-warning text-dark" : "bg-secondary"}`}>
+                              {report.status === "noted" ? "Approved" : report.status === "submitted" ? "Pending" : "Draft"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,1514 @@
+/* Monitor personnel – TasDoneNa color scheme (accent: #f54286), consistent with Personnel Directory & Activity Logs */
+
+.monitor-officers-page {
+  padding-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.monitor-officers-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: var(--text-muted, #4a5568);
+  font-size: 0.9375rem;
+}
+
+.monitor-officers-loading .spinner {
+  font-size: 1.25rem;
+}
+
+/* Title icon – accent tint */
+.account-approvals-page-icon.monitor-officers-title-icon {
+  color: var(--accent-color, #f54286);
+  background: rgba(245, 66, 134, 0.1);
+  border-color: rgba(245, 66, 134, 0.2);
+}
+
+/* Filter select */
+.monitor-officers-filter-select {
+  min-width: 10rem;
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-page {
+    padding-top: 1.25rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-page {
+    padding-top: 1rem;
+  }
+}
+
+/* KPI row – 4 cards grid */
+.monitor-officers-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 991.98px) {
+  .monitor-officers-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-kpi-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+.monitor-officers-kpi-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.monitor-officers-kpi-card:hover {
+  border-color: var(--accent-color, #f54286);
+  box-shadow: 0 2px 8px rgba(245, 66, 134, 0.1);
+}
+
+.monitor-officers-kpi-icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.monitor-officers-kpi-pending {
+  background: rgba(245, 66, 134, 0.12);
+  color: var(--accent-color, #f54286);
+}
+
+.monitor-officers-kpi-missing {
+  background: rgba(185, 28, 28, 0.08);
+  color: #b91c1c;
+}
+
+.monitor-officers-kpi-completed {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+.monitor-officers-kpi-officers {
+  background: rgba(30, 58, 95, 0.08);
+  color: var(--primary-color, #1e3a5f);
+}
+
+.monitor-officers-kpi-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.monitor-officers-kpi-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary, #4a5568);
+}
+
+.monitor-officers-kpi-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.monitor-officers-kpi-link {
+  font-size: 0.75rem;
+  color: var(--accent-color, #f54286);
+  font-weight: 500;
+}
+
+/* KPI modal value */
+.monitor-officers-kpi-modal-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+/* Personnel stats – Pending uses accent color */
+.monitor-officers-stats-pending.personnel-stats-card-icon,
+.monitor-officers-stats-pending .personnel-stats-card-icon {
+  background: rgba(245, 66, 134, 0.12);
+  color: var(--accent-color, #f54286);
+}
+
+/* Officer cards – MID-TASK APP layout: single column, avatar left + text right */
+.personnel-dir-cards-grid.monitor-officers-officers-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.personnel-dir-card-col.monitor-officers-card-col {
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* Expand body – smooth transition (My Tasks pattern) */
+.monitor-officers-expand-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.monitor-officers-expand-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.monitor-officers-expand-body-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.monitor-officers-expand-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+.monitor-officers-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: none;
+  border-top: 1px solid var(--sidebar-border, #e2e8f0);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-color, #f54286);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.monitor-officers-expand-btn:hover {
+  background: rgba(245, 66, 134, 0.08);
+}
+
+/* Expand row: left label, right icons+numbers+chevron – distinct colors for quick identification */
+.monitor-officers-expand-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.monitor-officers-expand-chevron-left {
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-expand-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-icon-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.monitor-officers-icon-count svg {
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-count-pending {
+  color: var(--accent-color, #f54286);
+}
+
+.monitor-officers-count-missing {
+  color: #b91c1c;
+}
+
+.monitor-officers-count-completed {
+  color: #16a34a;
+}
+
+/* Officer cards – one column (same as TheMidTaskApp) */
+.monitor-officers-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+/* Officer card – MID-TASK APP layout: circular avatar left, details right */
+.monitor-officers-officer-card {
+  background: var(--background-white, #fff);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.monitor-officers-officer-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.monitor-officers-officer-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.monitor-officers-officer-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.monitor-officers-officer-initials {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: rgba(30, 58, 95, 0.12);
+  color: var(--primary-color, #1e3a5f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.monitor-officers-officer-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.monitor-officers-officer-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.monitor-officers-officer-name {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+  font-size: 0.9375rem;
+}
+
+.monitor-officers-officer-email {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #4a5568);
+  margin-top: 0.15rem;
+}
+
+.monitor-officers-officer-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 0.15rem;
+}
+
+/* Card header row: "View task progress" | badges | chevron — one row like TheMidTaskApp */
+.monitor-officers-officer-main-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  width: 100%;
+  padding: 0.65rem 1.25rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: none;
+  border-top: 1px solid var(--sidebar-border, #e2e8f0);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-color, #f54286);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  text-align: left;
+}
+
+.monitor-officers-officer-main-row:hover {
+  background: rgba(245, 66, 134, 0.08);
+}
+
+.monitor-officers-officer-main-row .monitor-officers-officer-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-expand-icon {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.monitor-officers-expand-icon.expanded {
+  transform: rotate(90deg);
+}
+
+.monitor-officers-officer-badges {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.monitor-officers-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.monitor-officers-badge-pending {
+  background: rgba(245, 66, 134, 0.12);
+  color: var(--accent-color, #f54286);
+}
+
+.monitor-officers-badge-missing {
+  background: rgba(185, 28, 28, 0.08);
+  color: #b91c1c;
+}
+
+.monitor-officers-badge-completed {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+
+/* Task list (expanded) */
+.monitor-officers-task-list {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--sidebar-border, #e2e8f0);
+  background: #fff;
+}
+
+.monitor-officers-no-tasks {
+  font-size: 0.875rem;
+  color: var(--text-muted, #4a5568);
+  margin: 0;
+}
+
+.monitor-officers-task-section {
+  margin-bottom: 1rem;
+}
+
+.monitor-officers-task-section:last-child {
+  margin-bottom: 0;
+}
+
+.monitor-officers-task-section-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary, #4a5568);
+  margin: 0 0 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  background: var(--sidebar-bg, #f7f8fa);
+  width: fit-content;
+}
+
+.monitor-officers-task-section-title svg {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-task-section-pending .monitor-officers-task-section-title {
+  background: rgba(245, 66, 134, 0.08);
+  color: var(--accent-color, #f54286);
+}
+
+.monitor-officers-task-section-overdue .monitor-officers-task-section-title {
+  background: rgba(185, 28, 28, 0.08);
+  color: #b91c1c;
+}
+
+.monitor-officers-task-section-completed .monitor-officers-task-section-title {
+  background: rgba(22, 163, 74, 0.08);
+  color: #16a34a;
+}
+
+/* Task search in dropdown panel */
+.monitor-officers-task-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sidebar-border, #e2e8f0);
+  position: relative;
+}
+
+.monitor-officers-task-search-icon {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted, #4a5568);
+}
+
+.monitor-officers-task-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.4rem 0.65rem;
+  padding-right: 1.75rem;
+  font-size: 0.8125rem;
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 6px;
+  background: var(--sidebar-bg, #f7f8fa);
+  color: var(--sidebar-text, #1e3a5f);
+  font-family: inherit;
+}
+
+.monitor-officers-task-search-input::placeholder {
+  color: var(--text-muted, #94a3b8);
+}
+
+.monitor-officers-task-search-input:focus {
+  outline: none;
+  border-color: var(--accent-color, #f54286);
+  box-shadow: 0 0 0 2px rgba(245, 66, 134, 0.15);
+}
+
+/* Hide browser's native search clear button – we use our custom one */
+.monitor-officers-task-search-input::-webkit-search-cancel-button,
+.monitor-officers-task-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.monitor-officers-task-search-input::-moz-search-cancel-button {
+  display: none;
+}
+
+.monitor-officers-task-search-clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  background: var(--text-muted, #94a3b8);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.monitor-officers-task-search-clear:hover {
+  background: var(--text-secondary, #64748b);
+}
+
+/* Collapsible section header (replaces -title when section is dropdown) */
+.monitor-officers-task-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-secondary, #4a5568);
+  background: var(--sidebar-bg, #f7f8fa);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.monitor-officers-task-section-header:hover {
+  background: var(--sidebar-dark, #eef1f5);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.monitor-officers-task-section-header:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(245, 66, 134, 0.25);
+}
+
+.monitor-officers-task-section-header svg:first-child {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.monitor-officers-task-section-header span {
+  flex: 1;
+}
+
+.monitor-officers-task-section-chevron {
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  color: var(--text-muted, #64748b);
+  transition: transform 0.25s ease;
+}
+
+.monitor-officers-task-section-chevron.open {
+  transform: rotate(180deg);
+}
+
+.monitor-officers-task-section-pending .monitor-officers-task-section-header {
+  background: rgba(245, 66, 134, 0.06);
+  border-color: rgba(245, 66, 134, 0.2);
+  color: var(--accent-color, #f54286);
+}
+
+.monitor-officers-task-section-pending .monitor-officers-task-section-header:hover {
+  background: rgba(245, 66, 134, 0.1);
+}
+
+.monitor-officers-task-section-overdue .monitor-officers-task-section-header {
+  background: rgba(185, 28, 28, 0.06);
+  border-color: rgba(185, 28, 28, 0.2);
+  color: #b91c1c;
+}
+
+.monitor-officers-task-section-overdue .monitor-officers-task-section-header:hover {
+  background: rgba(185, 28, 28, 0.1);
+}
+
+.monitor-officers-task-section-completed .monitor-officers-task-section-header {
+  background: rgba(22, 163, 74, 0.06);
+  border-color: rgba(22, 163, 74, 0.2);
+  color: #16a34a;
+}
+
+.monitor-officers-task-section-completed .monitor-officers-task-section-header:hover {
+  background: rgba(22, 163, 74, 0.1);
+}
+
+/* Collapsible section body */
+.monitor-officers-task-section-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.3s ease;
+  overflow: hidden;
+}
+
+.monitor-officers-task-section-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.monitor-officers-task-section-body-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding-left: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-left: 2px solid var(--sidebar-border, #e2e8f0);
+}
+
+.monitor-officers-task-section-pending .monitor-officers-task-section-body-inner {
+  border-left-color: rgba(245, 66, 134, 0.3);
+}
+
+.monitor-officers-task-section-overdue .monitor-officers-task-section-body-inner {
+  border-left-color: rgba(185, 28, 28, 0.3);
+}
+
+.monitor-officers-task-section-completed .monitor-officers-task-section-body-inner {
+  border-left-color: rgba(22, 163, 74, 0.3);
+}
+
+.monitor-officers-task-item {
+  padding: 0.5rem 0.75rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.monitor-officers-task-item.overdue {
+  border-left: 3px solid #b91c1c;
+}
+
+.monitor-officers-task-item.completed {
+  border-left: 3px solid #16a34a;
+}
+
+.monitor-officers-task-item-title {
+  font-weight: 600;
+  color: var(--sidebar-text, #1e3a5f);
+}
+
+.monitor-officers-task-item-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted, #4a5568);
+  margin-top: 0.2rem;
+}
+
+.monitor-officers-task-item-kra {
+  color: var(--text-secondary, #64748b);
+}
+
+.monitor-officers-task-item-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  margin-top: 0.35rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.monitor-officers-show-more {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color, #f54286);
+  cursor: pointer;
+  padding: 0.25rem 0;
+  margin-top: 0.25rem;
+}
+
+.monitor-officers-show-more:hover {
+  text-decoration: underline;
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.15rem;
+}
+
+/* Task detail modal – uploaded files list */
+.monitor-officers-task-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.monitor-officers-task-file-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 8px;
+}
+.monitor-officers-task-file-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--sidebar-text, #1e3a5f);
+}
+.monitor-officers-task-file-name svg {
+  flex-shrink: 0;
+  color: var(--text-muted, #64748b);
+}
+.monitor-officers-task-file-meta {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #64748b);
+}
+.monitor-officers-task-file-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-color, #f54286);
+  background: rgba(245, 66, 134, 0.08);
+  border: 1px solid rgba(245, 66, 134, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.monitor-officers-task-file-download:hover {
+  background: rgba(245, 66, 134, 0.14);
+  border-color: var(--accent-color, #f54286);
+}
+.monitor-officers-task-file-download svg {
+  font-size: 0.9em;
+}
+
+/* Uploaded files list in task detail modal */
+.monitor-officers-task-files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.monitor-officers-task-file-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.monitor-officers-task-file-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 1 1 10rem;
+  min-width: 0;
+  color: var(--sidebar-text, #1e3a5f);
+  font-weight: 500;
+}
+
+.monitor-officers-task-file-name svg {
+  flex-shrink: 0;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.9rem;
+}
+
+.monitor-officers-task-file-meta {
+  font-size: 0.8125rem;
+  color: var(--text-muted, #4a5568);
+}
+
+.monitor-officers-task-file-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-color, #f54286);
+  background: rgba(245, 66, 134, 0.08);
+  border: 1px solid rgba(245, 66, 134, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.monitor-officers-task-file-download:hover {
+  background: rgba(245, 66, 134, 0.14);
+  border-color: rgba(245, 66, 134, 0.4);
+}
+
+/* Task modal & panel – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+    margin: auto 0;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-header,
+  .monitor-officers-task-modal .personnel-dir-modal-body {
+    padding: 1rem 1.25rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-details-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-header {
+    padding: 0.875rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-title {
+    font-size: 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-subtitle {
+    font-size: 0.8125rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-body {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-details-row {
+    font-size: 0.8125rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-footer {
+    padding: 0.75rem 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-btn-close {
+    width: 100%;
+    justify-content: center;
+  }
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.55rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  .monitor-officers-expand-right {
+    gap: 0.75rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  /* Dropdown panel: search + collapsible section headers */
+  .monitor-officers-task-search-wrap {
+    padding: 0.6rem 0;
+    margin-bottom: 0.4rem;
+  }
+  .monitor-officers-task-search-input {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.55rem;
+  }
+  .monitor-officers-task-section-header {
+    font-size: 0.8125rem;
+    padding: 0.45rem 0.6rem;
+  }
+  .monitor-officers-task-section-body-inner {
+    padding-left: 0.4rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.2rem;
+}
+
+/* Task modal & panel responsive – mobile, tablet, desktop */
+.monitor-officers-task-modal-overlay {
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  margin: auto;
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+  }
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.55rem 0.875rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+}
+
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.15rem;
+}
+
+/* Task modal & panel – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+    margin: auto 0;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.75rem 1rem;
+  }
+
+  .monitor-officers-task-section-title {
+    font-size: 0.75rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.15rem;
+}
+
+/* Task modal & expand panel – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay.personnel-dir-overlay {
+  padding: 1rem;
+  align-items: center;
+}
+.monitor-officers-task-modal-wrap.personnel-dir-wrap {
+  max-width: 28rem;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay.personnel-dir-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap.personnel-dir-wrap {
+    max-width: 100%;
+  }
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay.personnel-dir-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.55rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  .monitor-officers-expand-right {
+    gap: 0.75rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.15rem;
+}
+
+/* Task modal overlay – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .monitor-officers-task-section-title {
+    font-size: 0.75rem;
+  }
+
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-expand-btn {
+    padding: 0.5rem 0.875rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+}
+
+/* Responsive: task modal overlay & panel */
+.monitor-officers-task-modal-overlay.personnel-dir-overlay {
+  padding: 0.75rem;
+  align-items: center;
+}
+
+.monitor-officers-task-modal-wrap.personnel-dir-wrap {
+  max-width: min(28rem, calc(100vw - 1.5rem));
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay.personnel-dir-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .monitor-officers-task-modal-wrap.personnel-dir-wrap {
+    max-width: 100%;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.65rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay.personnel-dir-overlay {
+    padding: 0.5rem;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-expand-btn {
+    padding: 0.5rem 0.875rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.2rem;
+}
+
+/* Task modal & overlay – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+    margin: auto 0;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-header,
+  .monitor-officers-task-modal .personnel-dir-modal-body {
+    padding: 1rem 1.25rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-details-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+    padding: 0.5rem 0;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-header {
+    padding: 0.875rem 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-title {
+    font-size: 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-subtitle {
+    font-size: 0.8125rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-body {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-details-row {
+    font-size: 0.8125rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-modal-footer {
+    padding: 0.75rem 1rem;
+  }
+  .monitor-officers-task-modal .personnel-dir-btn-close {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Expand panel – responsive task list */
+@media (max-width: 767.98px) {
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.6rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  .monitor-officers-expand-right {
+    gap: 0.6rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+  padding: 0.75rem 0;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  padding-bottom: 0.15rem;
+}
+
+/* Task modal & expand panel – responsive */
+.monitor-officers-task-modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+    margin: auto 0;
+  }
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.55rem 0.875rem;
+    font-size: 0.75rem;
+  }
+  .monitor-officers-expand-right {
+    gap: 0.75rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+.monitor-officers-task-modal .personnel-dir-details-row.personnel-dir-details-row-full dt {
+  margin-bottom: 0.15rem;
+}
+
+/* Task modal & panel – responsive (mobile, tablet, desktop) */
+.monitor-officers-task-modal-overlay {
+  padding: 1rem;
+  align-items: center;
+  justify-content: center;
+}
+.monitor-officers-task-modal-wrap {
+  width: 100%;
+  max-width: 28rem;
+  max-height: calc(100vh - 2rem);
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+  .monitor-officers-task-modal-wrap {
+    max-height: calc(100vh - 1.5rem);
+  }
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-task-section-title {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+  .monitor-officers-expand-btn {
+    padding: 0.5rem 0.875rem;
+  }
+}
+
+/* Task detail modal – full-width rows for description/objective/MOVs */
+.monitor-officers-task-modal .personnel-dir-details-row-full {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.monitor-officers-task-modal .personnel-dir-details-row-full dt {
+  padding-top: 0.25rem;
+}
+
+/* Task modal & panel responsive – mobile, tablet, desktop */
+.monitor-officers-task-modal-overlay {
+  padding: 1rem;
+}
+
+.monitor-officers-task-modal-wrap {
+  max-width: 28rem;
+  width: 100%;
+}
+
+@media (max-width: 767.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .monitor-officers-task-modal-wrap {
+    max-width: 100%;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-task-section-title,
+  .monitor-officers-task-section-header {
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.6rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .monitor-officers-task-modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .monitor-officers-officer-header {
+    padding: 0.875rem 1rem;
+  }
+
+  .monitor-officers-expand-btn {
+    padding: 0.6rem 0.875rem;
+    font-size: 0.75rem;
+  }
+
+  .monitor-officers-expand-right {
+    gap: 0.75rem;
+  }
+
+  .monitor-officers-task-list {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .monitor-officers-task-section {
+    margin-bottom: 0.875rem;
+  }
+
+  .monitor-officers-task-section-title,
+  .monitor-officers-task-section-header {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+  }
+
+  /* Task search in dropdown – mobile */
+  .monitor-officers-task-search-wrap {
+    padding: 0.5rem 0;
+    margin-bottom: 0.35rem;
+  }
+
+  .monitor-officers-task-search-input {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .monitor-officers-task-section-body-inner {
+    padding-left: 0.35rem;
+  }
+}

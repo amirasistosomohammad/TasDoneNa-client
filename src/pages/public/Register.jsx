@@ -15,6 +15,7 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useSystemSettings } from "../../contexts/SystemSettingsContext.jsx";
 import { showToast } from "../../services/notificationService.js";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
@@ -56,6 +57,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { register: registerUser, verifyEmail, resendOtp, login } = useAuth();
+  const { appName, logoUrl, loading: settingsLoading, normalizeLogoUrl, logoTimestamp } = useSystemSettings();
 
   // TasDoneNa theme colors
   const theme = {
@@ -244,9 +246,7 @@ const Register = () => {
         fieldErrors.email || "Please enter a valid email address";
     }
 
-    if (!form.employee_id.trim()) {
-      errors.employee_id = "Please enter your employee ID";
-    }
+    // employee_id is optional
 
     if (!form.position.trim()) {
       errors.position = "Please enter your position";
@@ -359,12 +359,12 @@ const Register = () => {
 
   return (
     <div className="min-vh-100 d-flex flex-column flex-lg-row position-relative">
-      {/* Left side – background with subtle TasDoneNa pink overlay */}
+      {/* Left side – background image matching login page */}
       <div className="col-lg-6 d-none d-lg-block position-fixed start-0 top-0 h-100 p-0">
         <div
           className="w-100 h-100"
           style={{
-            backgroundImage: `linear-gradient(rgba(245, 66, 134, 0.30), rgba(213, 50, 111, 0.30)), url(${LoginBackground})`,
+            backgroundImage: `url(${LoginBackground})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
@@ -378,18 +378,67 @@ const Register = () => {
       {/* Right Panel - Scrollable (so we can scroll to top when switching to OTP) */}
       <div
         ref={rightPanelRef}
-        className="col-12 col-lg-6 ms-lg-auto position-relative register-right-panel"
-        style={{ overflowY: "auto", maxHeight: "100vh" }}
+        className="col-12 col-lg-6 ms-lg-auto position-relative register-right-panel auth-right"
+        style={{
+          overflowY: "auto",
+          maxHeight: "100vh",
+          background: "linear-gradient(135deg, #f0f2f5 0%, #e8ecf2 20%, #f5f7fb 40%, #e8ecf2 60%, #f0f2f5 80%, #f5f7fb 100%)",
+          backgroundSize: "200% 200%",
+          animation: "auth-gradient-flow 20s ease-in-out infinite",
+        }}
       >
-        {/* Background: same #F5F7FB as form card so top and bottom are even */}
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100"
-          style={{
-            backgroundColor: "#F5F7FB",
-          }}
-        />
+        {/* Content wrapper that grows with content */}
+        <div className="position-relative" style={{ minHeight: "100vh" }}>
+          {/* Corporate geometric pattern overlay - More visible, covers full scrollable area */}
+          <div
+            className="position-absolute top-0 start-0 w-100"
+            style={{
+              height: "100%",
+              minHeight: "100%",
+              backgroundImage: `
+                linear-gradient(rgba(245, 66, 134, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 66, 134, 0.15) 1px, transparent 1px),
+                linear-gradient(rgba(213, 50, 111, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(213, 50, 111, 0.08) 1px, transparent 1px)
+              `,
+              backgroundSize: "60px 60px, 60px 60px, 20px 20px, 20px 20px",
+              backgroundPosition: "0 0, 0 0, 0 0, 0 0",
+              backgroundRepeat: "repeat",
+              pointerEvents: "none",
+              zIndex: 0,
+              opacity: 1,
+              animation: "auth-grid-move 15s linear infinite",
+            }}
+          />
+          {/* Accent gradient overlays - Much more visible, covers full scrollable area */}
+          <div
+            className="position-absolute top-0 start-0 w-100"
+            style={{
+              height: "100%",
+              minHeight: "100%",
+              background: `
+                radial-gradient(ellipse 1000px 500px at 15% 25%, rgba(245, 66, 134, 0.25) 0%, rgba(245, 66, 134, 0.12) 30%, rgba(245, 66, 134, 0.05) 50%, transparent 70%),
+                radial-gradient(ellipse 800px 400px at 85% 75%, rgba(255, 111, 165, 0.2) 0%, rgba(255, 111, 165, 0.1) 40%, rgba(255, 111, 165, 0.03) 60%, transparent 75%),
+                radial-gradient(ellipse 600px 300px at 50% 50%, rgba(245, 66, 134, 0.18) 0%, rgba(245, 66, 134, 0.08) 40%, transparent 65%)
+              `,
+              backgroundRepeat: "no-repeat",
+              pointerEvents: "none",
+              zIndex: 0,
+              animation: "auth-accent-pulse 18s ease-in-out infinite",
+            }}
+          />
+          {/* Top border accent - More visible */}
+          <div
+            className="position-absolute top-0 start-0 w-100"
+            style={{
+              height: "5px",
+              background: "linear-gradient(90deg, transparent 0%, rgba(245, 66, 134, 0.5) 20%, rgba(245, 66, 134, 0.6) 50%, rgba(245, 66, 134, 0.5) 80%, transparent 100%)",
+              zIndex: 1,
+              boxShadow: "0 2px 8px rgba(245, 66, 134, 0.2)",
+            }}
+          />
 
-        <div className="min-vh-100 d-flex align-items-center justify-content-center p-3 p-lg-4">
+          <div className="d-flex align-items-center justify-content-center p-3 p-lg-4" style={{ position: "relative", zIndex: 1, minHeight: "100vh", paddingBottom: "4rem" }}>
           <div
             className={`rounded-4 shadow-lg p-4 p-sm-5 w-100 form-container ${
               isMounted ? "fade-in" : ""
@@ -404,15 +453,43 @@ const Register = () => {
           >
             {/* Single centered logo above the form (all screen sizes) */}
             <div className="text-center mb-4">
-              <img
-                src={Logo}
-                alt="TasDoneNa Logo"
-                style={{
-                  width: "90px",
-                  height: "90px",
-                  objectFit: "contain",
-                }}
-              />
+              {settingsLoading ? (
+                <div
+                  className="login-logo-skeleton"
+                  style={{
+                    width: "90px",
+                    height: "90px",
+                    borderRadius: "8px",
+                    margin: "0 auto",
+                  }}
+                />
+              ) : logoUrl ? (
+                <img
+                  key={logoUrl + logoTimestamp}
+                  src={normalizeLogoUrl(logoUrl) + (logoUrl.includes('?') ? '&' : '?') + `t=${logoTimestamp}`}
+                  alt={`${appName} Logo`}
+                  style={{
+                    width: "90px",
+                    height: "90px",
+                    objectFit: "contain",
+                    transition: "opacity 0.3s ease",
+                    animation: "fadeIn 0.4s ease-out",
+                  }}
+                  onError={(e) => {
+                    e.target.src = Logo;
+                  }}
+                />
+              ) : (
+                <img
+                  src={Logo}
+                  alt={`${appName} Logo`}
+                  style={{
+                    width: "90px",
+                    height: "90px",
+                    objectFit: "contain",
+                  }}
+                />
+              )}
             </div>
 
             <div className="register-step-wrapper">
@@ -437,7 +514,7 @@ const Register = () => {
                       }}
                     >
                       Register using your official DepEd institutional email to securely
-                      access the TasDoneNa task management system.
+                      access the {appName} task management system.
                     </p>
                   </div>
 
@@ -484,11 +561,11 @@ const Register = () => {
                     {renderFieldIcon("name")}
                   </span>
                 </div>
-                {fieldErrors.name && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.name ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.name}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Institutional Email */}
@@ -533,11 +610,11 @@ const Register = () => {
                     {renderFieldIcon("email")}
                   </span>
                 </div>
-                {fieldErrors.email && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.email ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.email}
                   </div>
-                )}
+                </div>
                 <div className="form-text small mt-1">
                   Use your official institutional email address.
                 </div>
@@ -553,7 +630,7 @@ const Register = () => {
                     color: theme.textSecondary,
                   }}
                 >
-                  Employee ID *
+                  Employee ID
                 </label>
                 <div className="input-group">
                   <span className="input-group-text bg-transparent border-end-0">
@@ -579,7 +656,6 @@ const Register = () => {
                         ? "#dc3545"
                         : "var(--input-border)",
                     }}
-                    required
                     disabled={isSubmitting}
                     id="employee_id"
                   />
@@ -587,11 +663,11 @@ const Register = () => {
                     {renderFieldIcon("employee_id")}
                   </span>
                 </div>
-                {fieldErrors.employee_id && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.employee_id ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.employee_id}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Position */}
@@ -631,11 +707,11 @@ const Register = () => {
                     id="position"
                   />
                 </div>
-                {fieldErrors.position && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.position ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.position}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Division */}
@@ -675,11 +751,11 @@ const Register = () => {
                     id="division"
                   />
                 </div>
-                {fieldErrors.division && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.division ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.division}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* School Name */}
@@ -719,11 +795,11 @@ const Register = () => {
                     id="school_name"
                   />
                 </div>
-                {fieldErrors.school_name && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.school_name ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.school_name}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Password */}
@@ -789,11 +865,11 @@ const Register = () => {
                     </button>
                   </span>
                 </div>
-                {fieldErrors.password && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.password ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.password}
                   </div>
-                )}
+                </div>
                 <div
                   className={`password-criteria-wrapper${showPasswordCriteria ? " password-criteria-visible" : ""}`}
                 >
@@ -888,11 +964,11 @@ const Register = () => {
                     </button>
                   </span>
                 </div>
-                {fieldErrors.confirmPassword && (
+                <div className={`invalid-feedback-wrapper${fieldErrors.confirmPassword ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.confirmPassword}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Submit Button */}
@@ -915,7 +991,7 @@ const Register = () => {
               <p
                 className="text-center mt-4 pt-3 mb-0 small fw-semibold border-top"
                 style={{
-                  color: theme.textSecondary,
+                  color: theme.primary,
                   paddingTop: "1rem",
                   borderColor: `${theme.borderColor} !important`,
                 }}
@@ -998,9 +1074,13 @@ const Register = () => {
                       ))}
                     </div>
 
-                    {otpError && (
-                      <div className="small text-danger mb-2">{otpError}</div>
-                    )}
+                    <div className={`otp-error-wrapper${otpError ? " otp-error-visible" : ""}`}>
+                      <div className="otp-error-inner">
+                        <div className="otp-error-message small text-danger mb-2 text-center">
+                          {otpError}
+                        </div>
+                      </div>
+                    </div>
 
                     <button
                       type="submit"
@@ -1019,7 +1099,7 @@ const Register = () => {
 
                     <button
                       type="button"
-                      className="btn btn-outline-secondary w-100 py-2 rounded-3 register-otp-resend-btn"
+                      className="btn-resend w-100 py-2 rounded-3"
                       onClick={handleResendOtp}
                       disabled={resendLoading || resendCooldown > 0}
                     >
@@ -1031,7 +1111,7 @@ const Register = () => {
                     </button>
                   </form>
 
-                  <p className="text-center mt-3 mb-0 small" style={{ color: theme.textSecondary }}>
+                  <p className="text-center mt-3 mb-0 small fw-semibold" style={{ color: theme.primary }}>
                     Already have an account?{" "}
                     <Link to="/login" className="fw-bold register-otp-signin-link">
                       Sign in
@@ -1042,14 +1122,55 @@ const Register = () => {
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       {/* Custom Styles */}
       <style jsx>{`
-        /* Form Container Animation */
+        /* Background Animations - Corporate Style */
+        @keyframes auth-gradient-flow {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+
+        @keyframes auth-grid-move {
+          0% {
+            background-position: 0 0, 0 0, 0 0, 0 0;
+            opacity: 1;
+          }
+          50% {
+            background-position: 30px 30px, 30px 30px, 10px 10px, 10px 10px;
+            opacity: 0.8;
+          }
+          100% {
+            background-position: 0 0, 0 0, 0 0, 0 0;
+            opacity: 1;
+          }
+        }
+
+        @keyframes auth-accent-pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          33% {
+            opacity: 0.9;
+            transform: scale(1.1);
+          }
+          66% {
+            opacity: 0.95;
+            transform: scale(0.95);
+          }
+        }
+
+        /* Form Container Animation - Same as Login page (from upwards) */
         .form-container {
           opacity: 0;
-          transform: translateY(20px);
+          transform: translateY(-20px);
           transition: all 0.6s ease-in-out;
         }
 
@@ -1091,11 +1212,122 @@ const Register = () => {
         /* Error state styling */
         .is-invalid {
           border-color: #dc3545 !important;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .is-invalid:focus {
+          box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+
+        /* Password criteria smooth transition */
+        .password-criteria-wrapper {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+        }
+
+        .password-criteria-wrapper.password-criteria-visible {
+          grid-template-rows: 1fr;
+        }
+
+        .password-criteria-inner {
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        .password-criteria-content {
+          opacity: 0;
+          transform: translateY(-8px);
+          transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+            transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+        }
+
+        .password-criteria-wrapper.password-criteria-visible .password-criteria-content {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .password-criteria-content ul {
+          margin: 0;
+          padding-left: 1.25rem;
+          list-style: none;
+        }
+
+        .password-criteria-content li {
+          transition: color 0.3s ease;
+        }
+
+        /* OTP Error smooth transition - Corporate style */
+        .otp-error-wrapper {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+          margin-bottom: 0;
+        }
+
+        .otp-error-wrapper.otp-error-visible {
+          grid-template-rows: 1fr;
+          margin-bottom: 0.5rem;
+        }
+
+        .otp-error-inner {
+          min-height: 0;
+          overflow: hidden;
+        }
+
+        .otp-error-message {
+          opacity: 0;
+          transform: translateY(-8px);
+          transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+            transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s;
+          color: #dc3545;
+          font-size: 0.875rem;
+          line-height: 1.4;
+        }
+
+        .otp-error-wrapper.otp-error-visible .otp-error-message {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        /* Smooth error message animation - Corporate style */
+        .invalid-feedback-wrapper {
+          display: grid;
+          grid-template-rows: 0fr;
+          transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow: hidden;
+        }
+
+        .invalid-feedback-wrapper.invalid-feedback-visible {
+          grid-template-rows: 1fr;
+        }
+
+        .invalid-feedback-wrapper .invalid-feedback {
+          min-height: 0;
+          overflow: hidden;
         }
 
         .invalid-feedback {
           color: #dc3545;
           font-size: 0.875rem;
+          display: block;
+          opacity: 0;
+          transform: translateY(-8px);
+          margin-top: 0;
+          transition: 
+            opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+            transform 0.35s cubic-bezier(0.4, 0, 0.2, 1) 0.05s,
+            margin-top 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+          line-height: 1.4;
+        }
+
+        .invalid-feedback-wrapper.invalid-feedback-visible .invalid-feedback {
+          opacity: 1;
+          transform: translateY(0);
           margin-top: 0.25rem;
         }
 

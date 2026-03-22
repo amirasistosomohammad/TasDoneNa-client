@@ -15,11 +15,10 @@ const statusBadgeClass = (status) => {
   switch (status) {
     case "completed":
       return "officers-status-badge officers-status-approved";
-    case "in_progress":
-      return "officers-status-badge officers-status-pending";
     case "cancelled":
       return "officers-status-badge officers-status-rejected";
     case "pending":
+    case "in_progress": // Legacy: treat as pending
     default:
       return "officers-status-badge officers-status-pending";
   }
@@ -48,7 +47,7 @@ const TaskDetailsModal = ({ task, closing, onClose, onEdit }) => {
 
   if (!task) return null;
 
-  const displayStatus = task.status === "in_progress" ? "In progress" : (task.status || "Pending").replace(/_/g, " ");
+  const displayStatus = task.status === "in_progress" ? "Pending" : (task.status || "Pending").replace(/_/g, " ");
   const displayPriority = (task.priority || "medium").charAt(0).toUpperCase() + (task.priority || "medium").slice(1);
 
   return (
@@ -113,10 +112,6 @@ const TaskDetailsModal = ({ task, closing, onClose, onEdit }) => {
               <div className="account-approvals-detail-field" role="listitem">
                 <div className="account-approvals-detail-label">Due date</div>
                 <div className="account-approvals-detail-value">{formatDate(task.due_date)}</div>
-              </div>
-              <div className="account-approvals-detail-field" role="listitem">
-                <div className="account-approvals-detail-label">Cutoff date</div>
-                <div className="account-approvals-detail-value">{formatDate(task.cutoff_date)}</div>
               </div>
               {task.description && (
                 <div className="account-approvals-detail-field account-approvals-detail-field-full" role="listitem">

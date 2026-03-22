@@ -19,6 +19,26 @@ export const AuthProvider = ({ children }) => {
     setUser(newUser || null);
   }, []);
 
+  const logout = useCallback(async () => {
+    try {
+      await api.post("/logout");
+    } catch {
+      // ignore
+    }
+    setAuth(null);
+  }, [setAuth]);
+
+  const refreshUser = useCallback(async () => {
+    if (!token) return null;
+    try {
+      const data = await api.get("/user");
+      setUser(data.user);
+      return data.user;
+    } catch {
+      return null;
+    }
+  }, [token]);
+
   useEffect(() => {
     if (!token) {
       setUser(null);
@@ -37,6 +57,102 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       });
   }, [token, setAuth]);
+
+  // Real-time status polling: Check user status periodically for approval/rejection updates
+  useEffect(() => {
+    // Only poll for non-admin users who are authenticated
+    if (!token || !user || user?.role === "admin") {
+      return;
+    }
+
+    // Polling interval: Check every 5 seconds
+    const POLL_INTERVAL = 5000;
+    let pollInterval = null;
+    let isMounted = true;
+
+    const checkStatus = async () => {
+      if (!isMounted) return;
+
+      try {
+        const data = await api.get("/user");
+        const newUser = data.user;
+        const previousStatus = user?.status;
+        const newStatus = newUser?.status;
+
+        if (!isMounted) return;
+
+        // Status changed to "approved" - update user state dynamically
+        if (previousStatus === "pending" && newStatus === "approved") {
+          setUser(newUser);
+          // Dispatch event for components that listen to status changes
+          window.dispatchEvent(new CustomEvent("user-status-approved", { detail: { user: newUser } }));
+        }
+        // Status changed to "rejected" - automatically logout
+        else if (previousStatus !== "rejected" && newStatus === "rejected") {
+          // Stop polling before logout
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+          // Show notification before logout
+          window.dispatchEvent(
+            new CustomEvent("user-status-rejected", {
+              detail: {
+                reason: newUser?.rejection_reason || "Your account has been rejected by an administrator.",
+              },
+            })
+          );
+          // Logout user
+          logout();
+        }
+        // Status changed to "deactivated" - automatically logout
+        else if (previousStatus !== "deactivated" && newUser?.is_active === false && user?.is_active === true) {
+          // Stop polling before logout
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+          // Show notification before logout
+          window.dispatchEvent(
+            new CustomEvent("user-status-deactivated", {
+              detail: {
+                reason: newUser?.deactivation_reason || "Your account has been deactivated.",
+              },
+            })
+          );
+          // Logout user
+          logout();
+        }
+        // Update user if status changed (for other status changes)
+        else if (previousStatus !== newStatus) {
+          setUser(newUser);
+        }
+      } catch (error) {
+        // If unauthorized or token expired, stop polling
+        if (error.status === 401 || error?.data?.status === 401) {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+          if (isMounted) {
+            setAuth(null);
+          }
+        }
+        // Silently handle other errors and continue polling
+      }
+    };
+
+    // Start polling after initial load (wait a bit to avoid immediate check)
+    pollInterval = setInterval(checkStatus, POLL_INTERVAL);
+
+    // Cleanup: Stop polling when component unmounts or dependencies change
+    return () => {
+      isMounted = false;
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
+  }, [token, user, setAuth, logout]);
 
   const register = async (formData) => {
     const data = await api.post("/register", {
@@ -82,15 +198,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
-    try {
-      await api.post("/logout");
-    } catch {
-      // ignore
-    }
-    setAuth(null);
-  };
-
   const value = {
     user,
     token,
@@ -103,6 +210,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     setAuth,
+    refreshUser,
     isAuthenticated: !!user && !!token,
   };
 

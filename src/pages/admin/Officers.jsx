@@ -2,8 +2,15 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Swal from "sweetalert2";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
-import { FaClipboardList, FaSearch, FaEye, FaUserCheck, FaUserTimes, FaUsers, FaCheckCircle, FaPauseCircle, FaTimesCircle, FaTrash } from "react-icons/fa";
+import { FaClipboardList, FaSearch, FaEye, FaUserCheck, FaUserTimes, FaUsers, FaCheckCircle, FaPauseCircle, FaTimesCircle, FaTrash, FaExclamationTriangle, FaUndo } from "react-icons/fa";
 import Portal from "../../components/Portal.jsx";
+
+const normalizeAvatarUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  const baseUrl = api.baseUrl.replace(/\/$/, "");
+  return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
+};
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
@@ -55,32 +62,58 @@ const Officers = () => {
   const [deactivateOfficer, setDeactivateOfficer] = useState(null);
   const [deactivateReason, setDeactivateReason] = useState("");
   const [deactivateModalClosing, setDeactivateModalClosing] = useState(false);
+  const [activateOfficer, setActivateOfficer] = useState(null);
+  const [activateRemarks, setActivateRemarks] = useState("");
+  const [activateModalClosing, setActivateModalClosing] = useState(false);
   const [deleteOfficer, setDeleteOfficer] = useState(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleteModalClosing, setDeleteModalClosing] = useState(false);
   const [fullAmountModal, setFullAmountModal] = useState(null);
   const [fullAmountModalClosing, setFullAmountModalClosing] = useState(false);
 
-  const fetchOfficers = useCallback(async () => {
-    setLoading(true);
+  const fetchOfficers = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     try {
       const data = await api.get("/admin/officers");
-      setOfficers(data.officers || []);
-      setCurrentPage(1);
+      const list = data.officers || [];
+      setOfficers(list);
+      if (!silent) setCurrentPage(1);
+      return list;
     } catch (err) {
-      showAlert.error(
-        "Error",
-        err.data?.message || err.message || "Failed to load officers."
-      );
-      setOfficers([]);
+      if (!silent) {
+        showAlert.error(
+          "Error",
+          err.data?.message || err.message || "Failed to load officers."
+        );
+        setOfficers([]);
+      }
+      return [];
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     fetchOfficers();
   }, [fetchOfficers]);
+
+  /* Polling: refetch officers every 10s so admin sees personnel profile updates (avatar, name, etc.) without refresh */
+  useEffect(() => {
+    const POLL_INTERVAL = 10000;
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchOfficers({ silent: true });
+      }
+    }, POLL_INTERVAL);
+    return () => clearInterval(id);
+  }, [fetchOfficers]);
+
+  /* Sync detailOfficer with fresh data when officers list is updated (e.g. from polling) */
+  useEffect(() => {
+    if (!detailOfficer || officers.length === 0) return;
+    const fresh = officers.find((o) => o.id === detailOfficer.id);
+    if (fresh) setDetailOfficer(fresh);
+  }, [officers, detailOfficer?.id]);
 
   const stats = useMemo(() => {
     const nonPending = officers.filter((o) => o.status !== "pending");
@@ -132,14 +165,22 @@ const Officers = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
-    const d = new Date(dateStr);
-    return d.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    try {
+      const d = new Date(dateStr);
+      const dateStr_formatted = d.toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const timeStr = d.toLocaleTimeString("en-PH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      return `${dateStr_formatted}, ${timeStr}`;
+    } catch {
+      return dateStr || "—";
+    }
   };
 
   const closeDetailModal = () => {
@@ -278,30 +319,33 @@ const Officers = () => {
     }
   };
 
-  const confirmActivate = async (officer) => {
-    if (actionLoading !== null) return;
+  const openActivateModal = (officer) => {
+    setActivateOfficer(officer);
+    setActivateRemarks("");
+    setActivateModalClosing(false);
+  };
 
-    const result = await Swal.fire({
-      title: "Activate personnel account?",
-      text: `This will allow ${officer.name} to sign in again.`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, activate",
-      cancelButtonText: "Cancel",
-      confirmButtonColor: "#0f1f33",
-      cancelButtonColor: "#6c757d",
-      background: "#fff",
-      color: "#243047",
-    });
+  const closeActivateModal = () => {
+    if (!activateOfficer || actionLoading !== null) return;
+    setActivateModalClosing(true);
+    setTimeout(() => {
+      setActivateOfficer(null);
+      setActivateRemarks("");
+      setActivateModalClosing(false);
+    }, 200);
+  };
 
-    if (!result.isConfirmed) {
-      return;
-    }
+  const confirmActivate = async () => {
+    if (!activateOfficer || actionLoading !== null) return;
 
-    setActionLoading(officer.id);
+    setActionLoading(activateOfficer.id);
     try {
-      await api.post(`/admin/users/${officer.id}/activate`);
+      await api.post(`/admin/users/${activateOfficer.id}/activate`, {
+        remarks: activateRemarks || "",
+      });
       showToast.success("Personnel account activated.");
+      setActivateOfficer(null);
+      setActivateRemarks("");
       await fetchOfficers();
     } catch (err) {
       showAlert.error(
@@ -638,100 +682,104 @@ const Officers = () => {
               </div>
               <h3 className="account-approvals-empty-state-title">No matches found</h3>
               <p className="account-approvals-empty-state-text">
-                No personnel match your filters. Try different keywords or status.
+                No personnel match your filters. Try different keywords or status, or reset filters to view all records.
               </p>
               <button
                 type="button"
-                className="btn btn-sm account-approvals-empty-state-btn"
+                className="btn account-approvals-empty-state-btn"
                 onClick={() => {
                   setSearchQuery("");
                   setStatusFilter("all");
                 }}
+                aria-label="Reset filters to show all personnel"
               >
-                Clear filters
+                <FaUndo className="sb-empty-state-btn-icon" aria-hidden />
+                Reset filters
               </button>
             </div>
           ) : (
             <>
-              <div className="table-responsive account-approvals-table-wrap">
-                <table className="table table-hover align-middle mb-0 account-approvals-table">
-                  <thead className="table-light">
-                    <tr>
-                      <th scope="col" className="account-approvals-col-num text-center">
-                        #
-                      </th>
-                      <th scope="col" className="account-approvals-col-actions">
-                        Actions
-                      </th>
-                      <th scope="col" className="officer-avatar-header">
-                        Profile
-                      </th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Email</th>
-                      <th scope="col">Status</th>
-                      <th scope="col">Division</th>
-                      <th scope="col">School</th>
-                      <th scope="col">Registered</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayedOfficers.map((o, index) => (
-                      <tr key={o.id}>
-                        <td className="account-approvals-col-num text-center text-muted fw-medium">
-                          {(currentPage - 1) * pageSize + index + 1}
-                        </td>
-                        <td className="account-approvals-col-actions">
-                          <div className="d-flex gap-1 flex-nowrap align-items-center account-approvals-action-btns">
+              {/* Card Grid Layout - matching old project structure */}
+              <div className="personnel-dir-cards-container">
+                <div className="personnel-dir-cards-grid">
+                  {displayedOfficers.map((o, index) => {
+                    const isActionDisabled = !!deactivateOfficer || !!reapproveOfficer || !!deleteOfficer || !!activateOfficer;
+                    return (
+                      <div key={o.id} className="personnel-dir-card-col">
+                        <div
+                          className="personnel-dir-personnel-card"
+                          onClick={() => !isActionDisabled && setDetailOfficer(o)}
+                          onKeyDown={(e) => {
+                            if ((e.key === "Enter" || e.key === " ") && !isActionDisabled) {
+                              e.preventDefault();
+                              setDetailOfficer(o);
+                            }
+                          }}
+                          tabIndex={0}
+                          role="button"
+                          aria-label={`View details for ${o.name}`}
+                        >
+                          {/* Top strip: full-width avatar (DATravelApp-style) */}
+                          <div className="personnel-dir-card-top-strip">
+                            {o.avatar_url || o.profile_avatar_url ? (
+                              <img
+                                src={normalizeAvatarUrl(o.profile_avatar_url || o.avatar_url)}
+                                alt={o.name}
+                                className="personnel-dir-card-top-img"
+                              />
+                            ) : (
+                              <div className="personnel-dir-card-top-initials">
+                                <span className="personnel-dir-avatar-initials">{getInitials(o.name)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Hover actions */}
+                          <div className="personnel-dir-card-actions">
                             <button
                               type="button"
-                              className="btn btn-sm btn-primary account-approvals-btn-icon"
-                              onClick={() => setDetailOfficer(o)}
-                              title="View details"
-                              aria-label="View details"
+                              className="personnel-dir-card-btn personnel-dir-card-btn-view"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDetailOfficer(o);
+                              }}
+                              disabled={isActionDisabled}
+                              aria-label={`View ${o.name}`}
+                              title="View"
                             >
                               <FaEye aria-hidden />
                             </button>
                             {o.status === "rejected" && (
-                              <>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-success account-approvals-btn-icon"
-                                  onClick={() => openReapproveModal(o)}
-                                  disabled={actionLoading !== null}
-                                  title="Approve"
-                                  aria-label="Approve"
-                                >
-                                  {actionLoading === o.id ? (
-                                    <span className="spinner-border spinner-border-sm" aria-hidden />
-                                  ) : (
-                                    <FaUserCheck aria-hidden />
-                                  )}
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm btn-danger account-approvals-btn-icon"
-                                  onClick={() => openDeleteModal(o)}
-                                  disabled={actionLoading !== null}
-                                  title="Remove from directory"
-                                  aria-label="Remove from directory"
-                                >
-                                  {actionLoading === o.id ? (
-                                    <span className="spinner-border spinner-border-sm" aria-hidden />
-                                  ) : (
-                                    <FaTrash aria-hidden />
-                                  )}
-                                </button>
-                              </>
+                              <button
+                                type="button"
+                                className="personnel-dir-card-btn personnel-dir-card-btn-approve"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openReapproveModal(o);
+                                }}
+                                disabled={isActionDisabled}
+                                aria-label={`Approve ${o.name}`}
+                                title="Approve"
+                              >
+                                {actionLoading === o.id ? (
+                                  <span className="spinner-border spinner-border-sm" aria-hidden />
+                                ) : (
+                                  <FaUserCheck aria-hidden />
+                                )}
+                              </button>
                             )}
                             {o.status === "approved" && (
                               o.is_active ? (
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-danger account-approvals-btn-icon"
-                                  onClick={() => openDeactivateModal(o)}
-                                  disabled={actionLoading !== null}
-                                  title="Deactivate account"
-                                  aria-label="Deactivate account"
+                                  className="personnel-dir-card-btn personnel-dir-card-btn-deactivate"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openDeactivateModal(o);
+                                  }}
+                                  disabled={isActionDisabled}
+                                  aria-label={`Deactivate ${o.name}`}
+                                  title="Deactivate"
                                 >
                                   {actionLoading === o.id ? (
                                     <span className="spinner-border spinner-border-sm" aria-hidden />
@@ -742,11 +790,14 @@ const Officers = () => {
                               ) : (
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-success account-approvals-btn-icon"
-                                  onClick={() => confirmActivate(o)}
-                                  disabled={actionLoading !== null}
-                                  title="Activate account"
-                                  aria-label="Activate account"
+                                  className="personnel-dir-card-btn personnel-dir-card-btn-activate"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    openActivateModal(o);
+                                  }}
+                                  disabled={isActionDisabled}
+                                  aria-label={`Activate ${o.name}`}
+                                  title="Activate"
                                 >
                                   {actionLoading === o.id ? (
                                     <span className="spinner-border spinner-border-sm" aria-hidden />
@@ -756,35 +807,56 @@ const Officers = () => {
                                 </button>
                               )
                             )}
+                            <button
+                              type="button"
+                              className="personnel-dir-card-btn personnel-dir-card-btn-delete"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteModal(o);
+                              }}
+                              disabled={isActionDisabled}
+                              aria-label={`Delete ${o.name}`}
+                              title="Delete"
+                            >
+                              {actionLoading === o.id ? (
+                                <span className="spinner-border spinner-border-sm" aria-hidden />
+                              ) : (
+                                <FaTrash aria-hidden />
+                              )}
+                            </button>
                           </div>
-                        </td>
-                        <td className="officer-avatar-cell">
-                          <div className="officer-avatar" aria-hidden>
-                            <span>{getInitials(o.name)}</span>
+
+                          <div className="personnel-dir-card-body">
+                            <div className="personnel-dir-card-name" title={o.name}>
+                              {o.name}
+                            </div>
+                            <div className="personnel-dir-card-email" title={o.email}>
+                              {o.email}
+                            </div>
+                            <div className="personnel-dir-card-divider"></div>
+                            <div className="personnel-dir-card-row">
+                              <span className="personnel-dir-card-label">Position</span>
+                              <span className="personnel-dir-card-value" title={o.position || ""}>
+                                {o.position || "—"}
+                              </span>
+                            </div>
+                            <div className="personnel-dir-card-row">
+                              <span className="personnel-dir-card-label">Division</span>
+                              <span className="personnel-dir-card-value" title={o.division || ""}>
+                                {o.division || "—"}
+                              </span>
+                            </div>
+                            <div className="personnel-dir-card-footer">
+                              <span className={statusBadgeClass(getDisplayStatus(o))}>
+                                {getDisplayStatus(o)}
+                              </span>
+                            </div>
                           </div>
-                        </td>
-                        <td className="account-approvals-cell-text fw-semibold" title={o.name}>
-                          {o.name}
-                        </td>
-                        <td className="account-approvals-cell-text" title={o.email}>
-                          {o.email}
-                        </td>
-                        <td>
-                          <span className={statusBadgeClass(getDisplayStatus(o))}>{getDisplayStatus(o)}</span>
-                        </td>
-                        <td className="account-approvals-cell-text" title={o.division || ""}>
-                          {o.division || "—"}
-                        </td>
-                        <td className="account-approvals-cell-text" title={o.school_name || ""}>
-                          {o.school_name || "—"}
-                        </td>
-                        <td className="account-approvals-cell-text small text-muted">
-                          {formatDate(o.created_at)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Pagination – reuse approvals style */}
@@ -858,107 +930,178 @@ const Officers = () => {
         </div>
       </div>
 
-      {/* Officer detail modal – read-only, same styling as approvals detail */}
+      {/* Officer detail modal – matching old project structure */}
       {detailOfficer && (
         <Portal>
           <div
-            className="account-approvals-detail-overlay"
+            className={`personnel-dir-overlay${detailModalClosing ? " exit" : ""}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="officer-detail-title"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target === e.currentTarget) {
+                closeDetailModal();
+              }
+            }}
           >
             <div
-              className={`account-approvals-detail-backdrop modal-backdrop-animation${detailModalClosing ? " exit" : ""}`}
+              className={`personnel-dir-backdrop modal-backdrop-animation${detailModalClosing ? " exit" : ""}`}
               onClick={closeDetailModal}
               aria-hidden
             />
-            <div className={`account-approvals-detail-modal modal-content-animation${detailModalClosing ? " exit" : ""}`}>
-              <div className="account-approvals-detail-header">
-                <div className="d-flex align-items-center gap-3">
-                  <div className="officer-avatar officer-avatar-lg" aria-hidden>
-                    <span>{getInitials(detailOfficer.name)}</span>
-                  </div>
-                  <div className="account-approvals-detail-header-text">
-                  <h5 id="officer-detail-title" className="mb-0 fw-semibold">
-                    Personnel profile
+            <div className={`personnel-dir-wrap modal-content-animation${detailModalClosing ? " exit" : ""}`}>
+              <div className="personnel-dir-modal">
+                <div className="personnel-dir-modal-header">
+                  <div className="personnel-dir-modal-header-text">
+                    <h5 id="officer-detail-title" className="personnel-dir-modal-title">
+                      Personnel details
                     </h5>
-                    <div className="account-approvals-detail-subtitle">
-                      <span className="account-approvals-detail-name">{detailOfficer.name}</span>
-                      {detailOfficer.email ? (
-                        <span className="account-approvals-detail-email">• {detailOfficer.email}</span>
-                      ) : null}
+                    <div className="personnel-dir-modal-subtitle">
+                      {detailOfficer.name}
+                      {detailOfficer.email ? ` · ${detailOfficer.email}` : ""}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className="personnel-dir-modal-close"
+                    onClick={closeDetailModal}
+                    aria-label="Close modal"
+                  >
+                    ×
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="btn-close-custom"
-                  onClick={closeDetailModal}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="account-approvals-detail-body">
-                <div className="account-approvals-detail-grid" role="list">
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Employee ID</div>
-                    <div className="account-approvals-detail-value">{detailOfficer.employee_id || "—"}</div>
+                <div className="personnel-dir-modal-body">
+                  {/* Avatar section */}
+                  <div className="personnel-dir-details-avatar-section">
+                    {detailOfficer.avatar_url || detailOfficer.profile_avatar_url ? (
+                      <div className="personnel-dir-avatar personnel-dir-avatar-lg">
+                        <img
+                          src={normalizeAvatarUrl(detailOfficer.profile_avatar_url || detailOfficer.avatar_url)}
+                          alt={detailOfficer.name}
+                        />
+                      </div>
+                    ) : (
+                      <div className="personnel-dir-avatar personnel-dir-avatar-lg">
+                        <span className="personnel-dir-avatar-initials">{getInitials(detailOfficer.name)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Position</div>
-                    <div className="account-approvals-detail-value">{detailOfficer.position || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Division</div>
-                    <div className="account-approvals-detail-value">{detailOfficer.division || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">School</div>
-                    <div className="account-approvals-detail-value">{detailOfficer.school_name || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Status</div>
-                    <div className="account-approvals-detail-value">
-                      <span className={statusBadgeClass(getDisplayStatus(detailOfficer))}>{getDisplayStatus(detailOfficer)}</span>
+
+                  {/* Details grid */}
+                  <dl className="personnel-dir-details-grid">
+                    <div className="personnel-dir-details-row">
+                      <dt>Name</dt>
+                      <dd>{detailOfficer.name || "—"}</dd>
                     </div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Account activity</div>
-                    <div className="account-approvals-detail-value">
-                      {detailOfficer.status === "approved" && detailOfficer.is_active ? "Active" : "Inactive"}
+                    <div className="personnel-dir-details-row">
+                      <dt>Email</dt>
+                      <dd>{detailOfficer.email || "—"}</dd>
                     </div>
-                  </div>
-                  {detailOfficer.status === "rejected" && detailOfficer.rejection_reason && (
-                    <div className="account-approvals-detail-field account-approvals-detail-field-full" role="listitem">
-                      <div className="account-approvals-detail-label">Rejection reason</div>
-                      <div className="account-approvals-detail-value">
-                        {detailOfficer.rejection_reason}
+                    <div className="personnel-dir-details-row">
+                      <dt>Status</dt>
+                      <dd>
+                        <span className={statusBadgeClass(getDisplayStatus(detailOfficer))}>
+                          {getDisplayStatus(detailOfficer)}
+                        </span>
+                      </dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Employee ID</dt>
+                      <dd>{detailOfficer.employee_id || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Position</dt>
+                      <dd>{detailOfficer.position || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Division</dt>
+                      <dd>{detailOfficer.division || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>School</dt>
+                      <dd>{detailOfficer.school_name || "—"}</dd>
+                    </div>
+
+                    {/* Status information & remarks block */}
+                    {(detailOfficer.status === "approved" || detailOfficer.status === "rejected" || (detailOfficer.status === "approved" && !detailOfficer.is_active)) && (
+                      <div className={`personnel-dir-details-remarks-block${detailOfficer.status === "rejected" ? " personnel-dir-details-remarks-rejected" : detailOfficer.status === "approved" && !detailOfficer.is_active ? " personnel-dir-details-remarks-inactive" : ""}`}>
+                        <div className="personnel-dir-details-remarks-title">Status information</div>
+                        {detailOfficer.status === "approved" && detailOfficer.is_active && (
+                          <>
+                            {detailOfficer.approved_at && (
+                              <div className="personnel-dir-details-remarks-row">
+                                <span className="personnel-dir-details-remarks-label">Approved on</span>
+                                <span className="personnel-dir-details-remarks-value">{formatDate(detailOfficer.approved_at)}</span>
+                              </div>
+                            )}
+                            <div className="personnel-dir-details-remarks-row personnel-dir-details-remarks-full">
+                              <span className="personnel-dir-details-remarks-label">Approval remarks</span>
+                              <span className="personnel-dir-details-remarks-value">{detailOfficer.approval_remarks || "No remarks on file."}</span>
+                            </div>
+                            {detailOfficer.activated_at && (
+                              <>
+                                <div className="personnel-dir-details-remarks-row">
+                                  <span className="personnel-dir-details-remarks-label">Activated on</span>
+                                  <span className="personnel-dir-details-remarks-value">{formatDate(detailOfficer.activated_at)}</span>
+                                </div>
+                                {detailOfficer.activation_remarks && (
+                                  <div className="personnel-dir-details-remarks-row personnel-dir-details-remarks-full">
+                                    <span className="personnel-dir-details-remarks-label">Activation remarks</span>
+                                    <span className="personnel-dir-details-remarks-value">{detailOfficer.activation_remarks}</span>
+                                  </div>
+                                )}
+                              </>
+                            )}
+                          </>
+                        )}
+                        {detailOfficer.status === "rejected" && (
+                          <>
+                            {detailOfficer.rejected_at && (
+                              <div className="personnel-dir-details-remarks-row">
+                                <span className="personnel-dir-details-remarks-label">Rejected on</span>
+                                <span className="personnel-dir-details-remarks-value">{formatDate(detailOfficer.rejected_at)}</span>
+                              </div>
+                            )}
+                            <div className="personnel-dir-details-remarks-row personnel-dir-details-remarks-full">
+                              <span className="personnel-dir-details-remarks-label">Rejection remarks</span>
+                              <span className="personnel-dir-details-remarks-value">{detailOfficer.rejection_reason || "No remarks on file."}</span>
+                            </div>
+                          </>
+                        )}
+                        {detailOfficer.status === "approved" && !detailOfficer.is_active && (
+                          <>
+                            {detailOfficer.deactivated_at && (
+                              <div className="personnel-dir-details-remarks-row">
+                                <span className="personnel-dir-details-remarks-label">Deactivated on</span>
+                                <span className="personnel-dir-details-remarks-value">{formatDate(detailOfficer.deactivated_at)}</span>
+                              </div>
+                            )}
+                            <div className="personnel-dir-details-remarks-row personnel-dir-details-remarks-full">
+                              <span className="personnel-dir-details-remarks-label">Deactivation remarks</span>
+                              <span className="personnel-dir-details-remarks-value">{detailOfficer.deactivation_reason || "No remarks on file."}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="personnel-dir-details-grid-footer">
+                      <div className="personnel-dir-details-row">
+                        <dt>Last updated</dt>
+                        <dd>{formatDate(detailOfficer.updated_at || detailOfficer.created_at)}</dd>
                       </div>
                     </div>
-                  )}
-                  {detailOfficer.deactivation_reason && (
-                    <div className="account-approvals-detail-field account-approvals-detail-field-full" role="listitem">
-                      <div className="account-approvals-detail-label">Deactivation reason</div>
-                      <div className="account-approvals-detail-value">
-                        {detailOfficer.deactivation_reason}
-                      </div>
-                    </div>
-                  )}
-                  <div className="account-approvals-detail-field account-approvals-detail-field-full" role="listitem">
-                    <div className="account-approvals-detail-label">Registered</div>
-                    <div className="account-approvals-detail-value">{formatDate(detailOfficer.created_at)}</div>
-                  </div>
+                  </dl>
                 </div>
-              </div>
-              <div className="account-approvals-detail-footer">
-                <button
-                  type="button"
-                  className="btn btn-primary account-approvals-detail-close-btn"
-                  onClick={closeDetailModal}
-                >
-                  Close
-                </button>
+                <div className="personnel-dir-modal-footer">
+                  <button
+                    type="button"
+                    className="personnel-dir-btn-close"
+                    onClick={closeDetailModal}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1067,9 +1210,14 @@ const Officers = () => {
             <div className={`account-approvals-detail-modal modal-content-animation${deleteModalClosing ? " exit" : ""}`}>
               <div className="account-approvals-detail-header">
                 <div className="account-approvals-detail-header-text">
-                  <h5 id="delete-officer-title" className="mb-0 fw-semibold">
-                    Remove personnel from directory
-                  </h5>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <div className="personnel-delete-warning-icon">
+                      <FaExclamationTriangle aria-hidden />
+                    </div>
+                    <h5 id="delete-officer-title" className="mb-0 fw-semibold">
+                      Remove personnel from directory
+                    </h5>
+                  </div>
                   <div className="account-approvals-detail-subtitle">
                     <span className="account-approvals-detail-name">{deleteOfficer.name}</span>
                     {deleteOfficer.email ? (
@@ -1087,23 +1235,47 @@ const Officers = () => {
                 </button>
               </div>
               <div className="account-approvals-detail-body">
-                <p className="account-approvals-action-help">
-                  This will remove this personnel from the directory. Only rejected personnel with no tasks in the system can be removed. This action cannot be undone through the interface.
-                </p>
-                <div className="mb-3">
+                {/* Warning alert box */}
+                <div className="personnel-delete-warning-box">
+                  <div className="personnel-delete-warning-header">
+                    <FaExclamationTriangle className="personnel-delete-warning-box-icon" aria-hidden />
+                    <span className="personnel-delete-warning-title">Permanent Deletion Warning</span>
+                  </div>
+                  <div className="personnel-delete-warning-content">
+                    <p className="personnel-delete-warning-text mb-2">
+                      <strong>This action will permanently delete all records associated with this personnel from the system.</strong>
+                    </p>
+                    <ul className="personnel-delete-warning-list">
+                      <li>All personnel profile information</li>
+                      <li>All assigned tasks and task history</li>
+                      <li>All system activity records</li>
+                      <li>All associated data and relationships</li>
+                    </ul>
+                    <p className="personnel-delete-warning-note mb-0">
+                      <strong>This action cannot be undone.</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mb-3 mt-4">
                   <label htmlFor="delete-confirm-input" className="account-approvals-action-label">
-                    Type <strong>DELETE</strong> to confirm
+                    Type <strong className="text-danger">DELETE</strong> to confirm removal
                   </label>
                   <input
                     id="delete-confirm-input"
                     type="text"
-                    className="form-control"
+                    className={`form-control ${deleteConfirmText && deleteConfirmText !== "DELETE" ? "is-invalid" : ""}`}
                     placeholder="Type DELETE to confirm"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
                     disabled={actionLoading !== null}
                     autoComplete="off"
                   />
+                  {deleteConfirmText && deleteConfirmText !== "DELETE" && (
+                    <div className="invalid-feedback d-block">
+                      Please type exactly "DELETE" to confirm this action.
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="account-approvals-detail-footer">
@@ -1127,7 +1299,10 @@ const Officers = () => {
                       <span>Removing…</span>
                     </>
                   ) : (
-                    "Remove from directory"
+                    <>
+                      <FaTrash className="me-2" aria-hidden />
+                      Remove from directory
+                    </>
                   )}
                 </button>
               </div>
@@ -1214,6 +1389,91 @@ const Officers = () => {
                     </>
                   ) : (
                     "Deactivate personnel"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Portal>
+      )}
+
+      {/* Activate modal – for approved, currently inactive personnel */}
+      {activateOfficer && (
+        <Portal>
+          <div
+            className="account-approvals-detail-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="activate-officer-title"
+          >
+            <div
+              className={`account-approvals-detail-backdrop modal-backdrop-animation${activateModalClosing ? " exit" : ""}`}
+              onClick={closeActivateModal}
+              aria-hidden
+            />
+            <div className={`account-approvals-detail-modal modal-content-animation${activateModalClosing ? " exit" : ""}`}>
+              <div className="account-approvals-detail-header">
+                <div className="account-approvals-detail-header-text">
+                  <h5 id="activate-officer-title" className="mb-0 fw-semibold">
+                    Activate personnel
+                  </h5>
+                  <div className="account-approvals-detail-subtitle">
+                    <span className="account-approvals-detail-name">{activateOfficer.name}</span>
+                    {activateOfficer.email ? (
+                      <span className="account-approvals-detail-email">• {activateOfficer.email}</span>
+                    ) : null}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="btn-close-custom"
+                  onClick={closeActivateModal}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="account-approvals-detail-body">
+                <p className="account-approvals-action-help">
+                  Activating this personnel account will allow them to sign in again. You may record internal remarks for future reference.
+                </p>
+                <div className="mb-3">
+                  <label htmlFor="activate-remarks" className="account-approvals-action-label">
+                    Activation remarks <span className="text-muted">(optional)</span>
+                  </label>
+                  <textarea
+                    id="activate-remarks"
+                    className="form-control account-approvals-action-textarea"
+                    rows={3}
+                    placeholder="Add any internal notes about this activation (optional)."
+                    value={activateRemarks}
+                    onChange={(e) => setActivateRemarks(e.target.value)}
+                    disabled={actionLoading !== null}
+                  />
+                </div>
+              </div>
+              <div className="account-approvals-detail-footer">
+                <button
+                  type="button"
+                  className="btn btn-light account-approvals-detail-close-btn"
+                  onClick={closeActivateModal}
+                  disabled={actionLoading !== null}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn modal-confirm-btn account-approvals-detail-close-btn"
+                  onClick={confirmActivate}
+                  disabled={actionLoading !== null}
+                >
+                  {actionLoading === activateOfficer.id ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" aria-hidden />
+                      <span>Activating…</span>
+                    </>
+                  ) : (
+                    "Activate personnel"
                   )}
                 </button>
               </div>

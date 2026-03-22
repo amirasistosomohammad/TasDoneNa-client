@@ -1,28 +1,35 @@
 import React, { useEffect, useCallback, useState } from "react";
 import Portal from "./Portal.jsx";
 
-const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
+/**
+ * Task confirmation modal – matches LogoutConfirmModal and Personnel Directory modals.
+ * Same UI/UX structure for consistency across the system.
+ */
+const TaskConfirmModal = ({
+  isOpen,
+  title,
+  subtitle,
+  bodyText,
+  confirmLabel,
+  cancelLabel = "Cancel",
+  confirmVariant = "confirm", // "confirm" | "danger"
+  loadingLabel = "Processing…",
+  onConfirm,
+  onCancel,
+  isLoading = false,
+}) => {
   const [closing, setClosing] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleClose = useCallback(() => {
-    if (isLoading) return; // Prevent closing during logout
-    setClosing(true);
-    setTimeout(() => {
-      setClosing(false);
-      onCancel?.();
-    }, 200);
-  }, [onCancel, isLoading]);
+    if (isLoading) return;
+    if (closing) return;
+    onCancel?.();
+  }, [onCancel, isLoading, closing]);
 
-  const handleConfirm = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await onConfirm?.();
-    } catch (error) {
-      console.error("Logout error:", error);
-      setIsLoading(false);
-    }
-  }, [onConfirm]);
+  const handleConfirm = useCallback(() => {
+    if (isLoading) return;
+    onConfirm?.();
+  }, [onConfirm, isLoading]);
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -32,15 +39,17 @@ const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
   );
 
   useEffect(() => {
-    if (!isOpen) {
-      setIsLoading(false);
-      return;
-    }
+    if (!isOpen) return;
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleKeyDown]);
 
   if (!isOpen) return null;
+
+  const confirmBtnClass =
+    confirmVariant === "danger"
+      ? "btn modal-reject-btn account-approvals-detail-close-btn"
+      : "btn modal-confirm-btn account-approvals-detail-close-btn";
 
   return (
     <Portal>
@@ -48,23 +57,28 @@ const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
         className="account-approvals-detail-overlay"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="logout-confirm-title"
+        aria-labelledby="task-confirm-title"
         tabIndex={-1}
       >
         <div
           className={`account-approvals-detail-backdrop modal-backdrop-animation${closing ? " exit" : ""}`}
-          onClick={isLoading ? () => {} : handleClose}
+          onClick={handleClose}
           aria-hidden
         />
-        <div className={`account-approvals-detail-modal logout-confirm-modal modal-content-animation${closing ? " exit" : ""}`}>
+        <div
+          className={`account-approvals-detail-modal task-confirm-modal modal-content-animation${closing ? " exit" : ""}`}
+          onClick={(e) => e.stopPropagation()}
+        >
           <div className="account-approvals-detail-header">
             <div className="account-approvals-detail-header-text">
-              <h5 id="logout-confirm-title" className="mb-0 fw-semibold">
-                Sign out?
+              <h5 id="task-confirm-title" className="mb-0 fw-semibold">
+                {title}
               </h5>
-              <div className="account-approvals-detail-subtitle">
-                <span className="account-approvals-detail-name">Confirm sign out from your account</span>
-              </div>
+              {subtitle && (
+                <div className="account-approvals-detail-subtitle">
+                  <span className="account-approvals-detail-name">{subtitle}</span>
+                </div>
+              )}
             </div>
             <button
               type="button"
@@ -77,9 +91,7 @@ const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
             </button>
           </div>
           <div className="account-approvals-detail-body">
-            <p className="account-approvals-action-help mb-0">
-              Are you sure you want to sign out? You will need to sign in again to access TasDoneNa.
-            </p>
+            <p className="account-approvals-action-help mb-0">{bodyText}</p>
           </div>
           <div className="account-approvals-detail-footer">
             <button
@@ -88,21 +100,21 @@ const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
               onClick={handleClose}
               disabled={isLoading}
             >
-              Cancel
+              {cancelLabel}
             </button>
             <button
               type="button"
-              className="btn modal-reject-btn account-approvals-detail-close-btn"
+              className={confirmBtnClass}
               onClick={handleConfirm}
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Signing out...
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden />
+                  {loadingLabel}
                 </>
               ) : (
-                "Yes, sign out"
+                confirmLabel
               )}
             </button>
           </div>
@@ -112,4 +124,4 @@ const LogoutConfirmModal = ({ isOpen, onConfirm, onCancel }) => {
   );
 };
 
-export default LogoutConfirmModal;
+export default TaskConfirmModal;

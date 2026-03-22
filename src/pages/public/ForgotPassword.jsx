@@ -3,17 +3,21 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaSpinner, FaArrowLeft } from "react-icons/fa";
 import { showAlert, showToast } from "../../services/notificationService.js";
 import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useSystemSettings } from "../../contexts/SystemSettingsContext.jsx";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
 import TextLogo from "../../assets/logo-text.png";
+import AuthFooter from "../../components/public/AuthFooter.jsx";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [backgroundLoaded, setBackgroundLoaded] = useState(false);
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
   const { forgotPassword } = useAuth();
+  const { appName, logoUrl, loading: settingsLoading, normalizeLogoUrl, logoTimestamp } = useSystemSettings();
 
   const theme = {
     primary: "#f54286",
@@ -35,10 +39,11 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!email.trim()) {
-      showAlert.error("Email required", "Please enter your email address.");
+      setError("Please enter your email address.");
       return;
     }
 
+    setError("");
     setLoading(true);
     try {
       await forgotPassword(email.trim());
@@ -47,17 +52,22 @@ const ForgotPassword = () => {
       );
       navigate("/login", { replace: true });
     } catch (error) {
-      showAlert.error(
-        "Error",
-        error.data?.message || "An error occurred. Please try again later."
-      );
+      setError(error.data?.message || "An error occurred. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleInputChange = (e) => {
+    setEmail(e.target.value);
+    if (error) {
+      setError("");
+    }
+  };
+
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center position-relative">
+    <div className="auth-page-container d-flex flex-column position-relative">
+      {/* Background Image with Blur Effect */}
       <div
         className="position-absolute top-0 start-0 w-100 h-100"
         style={{
@@ -70,19 +80,41 @@ const ForgotPassword = () => {
           transition: "filter 0.5s ease-in-out",
         }}
       />
-      <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50" />
 
-      <div
-        className="position-relative bg-white rounded-4 shadow-lg p-4 p-sm-5 w-100 mx-3 mx-sm-0"
-        style={{
-          maxWidth: "420px",
-          border: `1px solid ${theme.borderColor}`,
-          animation: "fadeIn 0.6s ease-in-out",
-        }}
-      >
+      {/* Main Content Area */}
+      <div className="auth-page-content-wrapper flex-grow-1 d-flex align-items-center justify-content-center position-relative">
+        <div
+          className="position-relative bg-white rounded-4 shadow-lg p-4 p-sm-5 w-100 mx-3 mx-sm-0 auth-form-card"
+          style={{
+            maxWidth: "420px",
+            border: `1px solid ${theme.borderColor}`,
+            animation: "fadeIn 0.6s ease-in-out",
+          }}
+        >
         <div className="text-center mb-4">
-          <img src={Logo} alt="TasDoneNa" style={{ height: "56px" }} />
-          <img src={TextLogo} alt="TasDoneNa" className="ms-2" style={{ height: "32px" }} />
+          {settingsLoading ? (
+            <div className="d-flex align-items-center justify-content-center gap-2">
+              <div className="login-logo-skeleton" style={{ width: "56px", height: "56px", borderRadius: "8px" }} />
+              <div className="login-text-logo-skeleton" style={{ width: "120px", height: "32px", borderRadius: "4px" }} />
+            </div>
+          ) : (
+            <>
+              {logoUrl ? (
+                <img
+                  key={logoUrl + logoTimestamp}
+                  src={normalizeLogoUrl(logoUrl) + (logoUrl.includes('?') ? '&' : '?') + `t=${logoTimestamp}`}
+                  alt={`${appName}`}
+                  style={{ height: "56px", transition: "opacity 0.3s ease", animation: "fadeIn 0.4s ease-out" }}
+                  onError={(e) => {
+                    e.target.src = Logo;
+                  }}
+                />
+              ) : (
+                <img src={Logo} alt={appName} style={{ height: "56px" }} />
+              )}
+              <img src={TextLogo} alt={appName} className="ms-2" style={{ height: "32px" }} />
+            </>
+          )}
         </div>
 
         <h5 className="fw-bolder text-center mb-2" style={{ color: theme.textPrimary }}>
@@ -105,29 +137,37 @@ const ForgotPassword = () => {
             </span>
             <input
               type="email"
-              className="form-control border-start-0 fw-semibold"
+              className={`form-control border-start-0 fw-semibold${error ? " is-invalid" : ""}`}
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleInputChange}
               disabled={loading}
               style={{
                 backgroundColor: "var(--input-bg)",
                 color: "var(--input-text)",
-                borderColor: theme.borderColor,
+                borderColor: error ? "#dc3545" : theme.borderColor,
+                transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onFocus={(e) => {
+                e.target.style.borderColor = theme.primary;
+                e.target.style.boxShadow = "0 0 0 3px rgba(245, 66, 134, 0.25)";
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = error ? "#dc3545" : theme.borderColor;
+                e.target.style.boxShadow = "none";
               }}
               required
             />
           </div>
+          <div className={`invalid-feedback-wrapper${error ? " invalid-feedback-visible" : ""}`}>
+            <div className="invalid-feedback d-block small mt-1 text-danger">
+              {error || "\u00A0"}
+            </div>
+          </div>
 
           <button
             type="submit"
-            className="btn w-100 py-2 fw-semibold rounded-3 mb-3"
-            style={{
-              backgroundColor: theme.primary,
-              color: "#fff",
-              border: "none",
-              boxShadow: "0 4px 12px rgba(245, 66, 134, 0.3)",
-            }}
+            className="btn-login w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center mb-3"
             disabled={loading}
           >
             {loading ? (
@@ -143,24 +183,18 @@ const ForgotPassword = () => {
           <div className="text-center">
             <Link
               to="/login"
-              className="small fw-semibold d-inline-flex align-items-center text-decoration-none"
-              style={{
-                color: theme.textSecondary,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = theme.textPrimary;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = theme.textSecondary;
-              }}
+              className="small fw-bold d-inline-flex align-items-center tas-auth-link"
             >
               <FaArrowLeft className="me-1" style={{ fontSize: "0.85rem" }} />
               Back to sign in
             </Link>
           </div>
         </form>
+        </div>
       </div>
+
+      {/* Footer */}
+      <AuthFooter />
     </div>
   );
 };

@@ -2,10 +2,18 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Swal from "sweetalert2";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
-import { FaUserCheck, FaUserTimes, FaSyncAlt, FaClipboardList, FaEye, FaSearch } from "react-icons/fa";
+import { FaUserCheck, FaUserTimes, FaSyncAlt, FaClipboardList, FaEye, FaSearch, FaUndo } from "react-icons/fa";
 import Portal from "../../components/Portal.jsx";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
+
+const getInitials = (name) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+};
 
 const AccountApprovals = () => {
   const [users, setUsers] = useState([]);
@@ -211,14 +219,22 @@ const AccountApprovals = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
-    const d = new Date(dateStr);
-    return d.toLocaleString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
+    try {
+      const d = new Date(dateStr);
+      const dateStr_formatted = d.toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      const timeStr = d.toLocaleTimeString("en-PH", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+      return `${dateStr_formatted}, ${timeStr}`;
+    } catch {
+      return dateStr || "—";
+    }
   };
 
   return (
@@ -316,14 +332,16 @@ const AccountApprovals = () => {
               </div>
               <h3 className="account-approvals-empty-state-title">No matches found</h3>
               <p className="account-approvals-empty-state-text">
-                No pending personnel match your search. Try different keywords or clear the filter.
+                No pending personnel match your search. Try different keywords or reset the search to view all results.
               </p>
               <button
                 type="button"
-                className="btn btn-sm account-approvals-empty-state-btn"
+                className="btn account-approvals-empty-state-btn"
                 onClick={() => setSearchQuery("")}
+                aria-label="Reset search to show all results"
               >
-                Clear search
+                <FaUndo className="sb-empty-state-btn-icon" aria-hidden />
+                Reset search
               </button>
             </div>
           ) : (
@@ -475,75 +493,107 @@ const AccountApprovals = () => {
         </div>
       </div>
 
-      {/* Detail modal – Portal (CPC-style) + backdrop/content animations */}
+      {/* Detail modal – matching Personnel Directory structure for consistency */}
       {detailUser && (
         <Portal>
           <div
-            className="account-approvals-detail-overlay"
+            className={`personnel-dir-overlay${detailModalClosing ? " exit" : ""}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="account-detail-title"
-            tabIndex={-1}
-            onKeyDown={(e) => e.key === "Escape" && handleDetailClose()}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target === e.currentTarget) {
+                handleDetailClose();
+              }
+            }}
             ref={detailOverlayRef}
           >
             <div
-              className={`account-approvals-detail-backdrop modal-backdrop-animation${detailModalClosing ? " exit" : ""}`}
+              className={`personnel-dir-backdrop modal-backdrop-animation${detailModalClosing ? " exit" : ""}`}
               onClick={handleDetailClose}
               aria-hidden
             />
-            <div className={`account-approvals-detail-modal modal-content-animation${detailModalClosing ? " exit" : ""}`}>
-              <div className="account-approvals-detail-header">
-                <div className="account-approvals-detail-header-text">
-                  <h5 id="account-detail-title" className="mb-0 fw-semibold">
-                    Officer details
-                  </h5>
-                  <div className="account-approvals-detail-subtitle">
-                    <span className="account-approvals-detail-name">{detailUser.name}</span>
-                    {detailUser.email ? <span className="account-approvals-detail-email">• {detailUser.email}</span> : null}
+            <div className={`personnel-dir-wrap modal-content-animation${detailModalClosing ? " exit" : ""}`}>
+              <div className="personnel-dir-modal">
+                <div className="personnel-dir-modal-header">
+                  <div className="personnel-dir-modal-header-text">
+                    <h5 id="account-detail-title" className="personnel-dir-modal-title">
+                      Officer details
+                    </h5>
+                    <div className="personnel-dir-modal-subtitle">
+                      {detailUser.name}
+                      {detailUser.email ? ` · ${detailUser.email}` : ""}
+                    </div>
                   </div>
+                  <button
+                    type="button"
+                    className="personnel-dir-modal-close"
+                    onClick={handleDetailClose}
+                    aria-label="Close modal"
+                  >
+                    ×
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  className="btn-close-custom"
-                  onClick={handleDetailClose}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="account-approvals-detail-body">
-                <div className="account-approvals-detail-grid" role="list">
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Employee ID</div>
-                    <div className="account-approvals-detail-value">{detailUser.employee_id || "—"}</div>
+                <div className="personnel-dir-modal-body">
+                  {/* Avatar section */}
+                  <div className="personnel-dir-details-avatar-section">
+                    {detailUser.avatar_url || detailUser.profile_avatar_url ? (
+                      <div className="personnel-dir-avatar personnel-dir-avatar-lg">
+                        <img
+                          src={detailUser.avatar_url || detailUser.profile_avatar_url}
+                          alt={detailUser.name}
+                        />
+                      </div>
+                    ) : (
+                      <div className="personnel-dir-avatar personnel-dir-avatar-lg">
+                        <span className="personnel-dir-avatar-initials">{getInitials(detailUser.name)}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Position</div>
-                    <div className="account-approvals-detail-value">{detailUser.position || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">Division</div>
-                    <div className="account-approvals-detail-value">{detailUser.division || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field" role="listitem">
-                    <div className="account-approvals-detail-label">School</div>
-                    <div className="account-approvals-detail-value">{detailUser.school_name || "—"}</div>
-                  </div>
-                  <div className="account-approvals-detail-field account-approvals-detail-field-full" role="listitem">
-                    <div className="account-approvals-detail-label">Registered</div>
-                    <div className="account-approvals-detail-value">{formatDate(detailUser.created_at)}</div>
-                  </div>
+
+                  {/* Details grid */}
+                  <dl className="personnel-dir-details-grid">
+                    <div className="personnel-dir-details-row">
+                      <dt>Name</dt>
+                      <dd>{detailUser.name || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Email</dt>
+                      <dd>{detailUser.email || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Employee ID</dt>
+                      <dd>{detailUser.employee_id || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Position</dt>
+                      <dd>{detailUser.position || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>Division</dt>
+                      <dd>{detailUser.division || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-row">
+                      <dt>School</dt>
+                      <dd>{detailUser.school_name || "—"}</dd>
+                    </div>
+                    <div className="personnel-dir-details-grid-footer">
+                      <div className="personnel-dir-details-row">
+                        <dt>Registered</dt>
+                        <dd>{formatDate(detailUser.created_at)}</dd>
+                      </div>
+                    </div>
+                  </dl>
                 </div>
-              </div>
-              <div className="account-approvals-detail-footer">
-                <button
-                  type="button"
-                  className="btn btn-primary account-approvals-detail-close-btn"
-                  onClick={handleDetailClose}
-                >
-                  Close
-                </button>
+                <div className="personnel-dir-modal-footer">
+                  <button
+                    type="button"
+                    className="personnel-dir-btn-close"
+                    onClick={handleDetailClose}
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>

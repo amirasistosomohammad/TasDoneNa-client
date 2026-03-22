@@ -1,0 +1,293 @@
+/* Calendar – grid, day cells, side panel; header/cards use global account-approvals + personnel-stats */
+
+.calendar-layout {
+  display: grid;
+  grid-template-columns: 2.1fr 1.1fr;
+  gap: 1.1rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 991.98px) {
+  .calendar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.calendar-grid-card {
+  background: var(--background-white, #fff);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+}
+
+.calendar-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  background: var(--sidebar-bg, #f7f8fa);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.calendar-weekday {
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--footer-text, #4a5568);
+}
+
+.calendar-grid-body {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding: 0.35rem;
+  gap: 0.35rem;
+  background: #f8fafc;
+}
+
+.calendar-day-cell {
+  padding: 0.45rem 0.55rem 0.6rem;
+  text-align: left;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.2rem;
+  min-height: 4.5rem;
+}
+
+.calendar-day-cell:hover {
+  background: #f1f5f9;
+  border-color: rgba(30, 58, 95, 0.35);
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+.calendar-day-outside {
+  background: #f1f5f9;
+  color: #9ca3af;
+  border-style: dashed;
+}
+
+.calendar-day-today {
+  box-shadow: inset 0 0 0 1px rgba(30, 58, 95, 0.45);
+}
+
+.calendar-day-selected {
+  background: rgba(219, 234, 254, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(30, 58, 95, 0.6);
+}
+
+.calendar-day-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.calendar-day-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #2d3748);
+}
+
+.calendar-day-outside .calendar-day-number {
+  color: #9ca3af;
+}
+
+.calendar-day-pill {
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(30, 58, 95, 0.12);
+  color: var(--primary-color, #1e3a5f);
+  font-weight: 600;
+  border: 1px solid rgba(30, 58, 95, 0.25);
+}
+
+.calendar-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin-top: 0.15rem;
+}
+
+.calendar-event-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-event-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--primary-color, #1e3a5f);
+  flex-shrink: 0;
+}
+
+.calendar-event-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-event-pending {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--footer-text, #4b5563);
+}
+
+.calendar-event-overdue {
+  background: rgba(185, 28, 28, 0.12);
+  color: #b91c1c;
+}
+
+.calendar-event-completed {
+  background: rgba(22, 163, 74, 0.12);
+  color: #16a34a;
+}
+
+.calendar-event-more {
+  font-size: 0.7rem;
+  color: var(--footer-text, #4b5563);
+}
+
+.calendar-side-panel {
+  background: var(--background-white, #fff);
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+  padding: 1rem 1.1rem 1.2rem;
+}
+
+.calendar-side-header {
+  margin-bottom: 0.75rem;
+}
+
+.calendar-side-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sidebar-text, #2d3748);
+}
+
+.calendar-side-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--footer-text, #4b5568);
+}
+
+.calendar-side-empty {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--footer-text, #4b5563);
+}
+
+.calendar-side-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.calendar-side-item {
+  margin: 0;
+}
+
+.calendar-side-link {
+  display: block;
+  text-decoration: none;
+  border-radius: 8px;
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  padding: 0.6rem 0.75rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  color: inherit;
+}
+
+.calendar-side-link:hover {
+  background: var(--sidebar-dark, #eef1f5);
+  border-color: var(--primary-color, #1e3a5f);
+  box-shadow: 0 1px 4px rgba(30, 58, 95, 0.08);
+  text-decoration: none;
+  color: inherit;
+}
+
+.calendar-side-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.calendar-side-task-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--sidebar-text, #2d3748);
+}
+
+.calendar-side-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--footer-text, #4b5563);
+}
+
+.calendar-side-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--footer-text, #4b5563);
+}
+
+.calendar-pending-note {
+  margin-top: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--sidebar-bg, #f7f8fa);
+  border: 1px solid var(--sidebar-border, #e2e8f0);
+  border-radius: 8px;
+}
+
+@media (max-width: 767.98px) {
+  .calendar-grid-body .calendar-day-cell {
+    min-height: 3.5rem;
+  }
+
+  .calendar-event-pill {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .calendar-weekday {
+    padding: 0.35rem 0.25rem;
+    font-size: 0.7rem;
+  }
+
+  .calendar-day-cell {
+    padding: 0.3rem 0.35rem 0.4rem;
+    min-height: 3rem;
+  }
+
+  .calendar-day-number {
+    font-size: 0.8rem;
+  }
+}

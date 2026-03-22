@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 import { showAlert, showToast } from "../../services/notificationService.js";
 import { useAuth } from "../../contexts/AuthContext.jsx";
+import { useSystemSettings } from "../../contexts/SystemSettingsContext.jsx";
 import LoginBackground from "../../assets/login-bg.png";
 import Logo from "../../assets/logo.png";
 import TextLogo from "../../assets/logo-text.png";
@@ -32,6 +33,7 @@ const ResetPassword = () => {
 
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
+  const { appName, logoUrl, loading: settingsLoading, normalizeLogoUrl, logoTimestamp } = useSystemSettings();
 
   const theme = {
     primary: "#f54286",
@@ -128,18 +130,19 @@ const ResetPassword = () => {
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center position-relative">
+      {/* Background Image with Blur Effect */}
       <div
         className="position-absolute top-0 start-0 w-100 h-100"
         style={{
           backgroundImage: `url(${LoginBackground})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           backgroundColor: theme.backgroundLight,
           filter: backgroundLoaded ? "blur(0px)" : "blur(10px)",
           transition: "filter 0.5s ease-in-out",
         }}
       />
-      <div className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50" />
 
       <div
         className="position-relative bg-white rounded-4 shadow-lg p-4 p-sm-5 w-100 mx-3 mx-sm-0"
@@ -150,8 +153,29 @@ const ResetPassword = () => {
         }}
       >
         <div className="text-center mb-4">
-          <img src={Logo} alt="TasDoneNa" style={{ height: "56px" }} />
-          <img src={TextLogo} alt="TasDoneNa" className="ms-2" style={{ height: "32px" }} />
+          {settingsLoading ? (
+            <div className="d-flex align-items-center justify-content-center gap-2">
+              <div className="login-logo-skeleton" style={{ width: "56px", height: "56px", borderRadius: "8px" }} />
+              <div className="login-text-logo-skeleton" style={{ width: "120px", height: "32px", borderRadius: "4px" }} />
+            </div>
+          ) : (
+            <>
+              {logoUrl ? (
+                <img
+                  key={logoUrl + logoTimestamp}
+                  src={normalizeLogoUrl(logoUrl) + (logoUrl.includes('?') ? '&' : '?') + `t=${logoTimestamp}`}
+                  alt={appName}
+                  style={{ height: "56px", transition: "opacity 0.3s ease", animation: "fadeIn 0.4s ease-out" }}
+                  onError={(e) => {
+                    e.target.src = Logo;
+                  }}
+                />
+              ) : (
+                <img src={Logo} alt={appName} style={{ height: "56px" }} />
+              )}
+              <img src={TextLogo} alt={appName} className="ms-2" style={{ height: "32px" }} />
+            </>
+          )}
         </div>
 
         <h5 className="fw-bolder text-center mb-2" style={{ color: theme.textPrimary }}>
@@ -238,13 +262,13 @@ const ResetPassword = () => {
           <label className="form-label fw-semibold mb-2 small mt-3" style={{ color: theme.textSecondary }}>
             Confirm password
           </label>
-          <div className="input-group mb-3">
+          <div className="input-group mb-2">
             <span className="input-group-text bg-light border-end-0">
               <FaLock style={{ color: theme.textSecondary }} size={16} />
             </span>
             <input
               type={showConfirmPassword ? "text" : "password"}
-              className="form-control border-start-0 fw-semibold"
+              className={`form-control border-start-0 fw-semibold${confirmPassword && password !== confirmPassword ? " is-invalid" : ""}`}
               placeholder="Confirm new password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
@@ -269,24 +293,20 @@ const ResetPassword = () => {
               </button>
             </span>
           </div>
-          {confirmPassword && password !== confirmPassword && (
-            <div className="small text-danger mb-2">Passwords do not match</div>
-          )}
+          <div className={`invalid-feedback-wrapper mb-3${confirmPassword && password !== confirmPassword ? " invalid-feedback-visible" : ""}`}>
+            <div className="invalid-feedback d-block small mt-1 text-danger">
+              {confirmPassword && password !== confirmPassword ? "Passwords do not match" : "\u00A0"}
+            </div>
+          </div>
 
           <button
             type="submit"
-            className="btn w-100 py-2 fw-semibold rounded-3 mb-3"
-            style={{
-              backgroundColor: theme.primary,
-              color: "#fff",
-              border: "none",
-              boxShadow: "0 4px 12px rgba(245, 66, 134, 0.3)",
-            }}
+            className="btn-login w-100 py-2 fw-semibold shadow-sm d-flex align-items-center justify-content-center mb-3"
             disabled={loading}
           >
             {loading ? (
               <>
-                <FaSpinner className="me-2 spinner" />
+                <FaSpinner className="spinner me-2" />
                 Resetting...
               </>
             ) : (
@@ -297,17 +317,7 @@ const ResetPassword = () => {
           <div className="text-center">
             <Link
               to="/login"
-              className="small fw-semibold d-inline-flex align-items-center text-decoration-none"
-              style={{
-                color: theme.textSecondary,
-                transition: "color 0.2s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = theme.textPrimary;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = theme.textSecondary;
-              }}
+              className="small fw-bold d-inline-flex align-items-center tas-auth-link"
             >
               <FaArrowLeft className="me-1" style={{ fontSize: "0.85rem" }} />
               Back to sign in
