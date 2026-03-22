@@ -71,13 +71,13 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    // Polling interval: Check every 5 seconds
-    const POLL_INTERVAL = 5000;
+    // Slower interval + pause while tab is hidden — reduces parallel API load on small DO instances (504s).
+    const POLL_INTERVAL = 15000;
     let pollInterval = null;
     let isMounted = true;
 
     const checkStatus = async () => {
-      if (!isMounted) return;
+      if (!isMounted || document.visibilityState !== "visible") return;
 
       try {
         const data = await api.get("/user");
@@ -148,15 +148,37 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    // Start polling after initial load (wait a bit to avoid immediate check)
-    pollInterval = setInterval(checkStatus, POLL_INTERVAL);
+    const startPolling = () => {
+      if (pollInterval) return;
+      pollInterval = setInterval(checkStatus, POLL_INTERVAL);
+    };
+
+    const stopPolling = () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void checkStatus();
+        startPolling();
+      } else {
+        stopPolling();
+      }
+    };
+
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     // Cleanup: Stop polling when component unmounts or dependencies change
     return () => {
       isMounted = false;
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
+      stopPolling();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [token, user, setAuth, logout]);
 

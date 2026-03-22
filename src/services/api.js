@@ -11,29 +11,66 @@ const getBaseUrl = () =>
 
 const getToken = () => localStorage.getItem("access_token");
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** User-facing message for proxy / cold-start issues (DigitalOcean, etc.). */
+function messageForStatus(status, data) {
+  const fromApi = data?.message;
+  if (status === 504 || status === 502) {
+    return (
+      fromApi ||
+      "The server took too long to respond. Wait a few seconds and try again (the app may be waking up after idle)."
+    );
+  }
+  if (status === 503) {
+    return fromApi || "Service temporarily unavailable. Please try again shortly.";
+  }
+  return fromApi || "Request failed";
+}
+
 export const api = {
   baseUrl: getBaseUrl(),
 
   async request(endpoint, options = {}) {
+    const { params: queryParams, retryOnGatewayError, ...fetchOptions } = options;
     let path = `${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-    if (options.params && Object.keys(options.params).length > 0) {
-      const qs = new URLSearchParams(options.params).toString();
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      const qs = new URLSearchParams(queryParams).toString();
       path += (path.includes("?") ? "&" : "?") + qs;
     }
     const url = `${this.baseUrl.replace(/\/$/, "")}/api${path}`;
     const headers = {
       "Content-Type": "application/json",
       Accept: "application/json",
-      ...options.headers,
+      ...fetchOptions.headers,
     };
     const token = getToken();
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    const res = await fetch(url, { ...options, headers });
+
+    const method = (fetchOptions.method || "GET").toUpperCase();
+    const allowGatewayRetry =
+      method === "GET" && retryOnGatewayError !== false;
+    const maxAttempts = allowGatewayRetry ? 2 : 1;
+
+    let res = null;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      res = await fetch(url, { ...fetchOptions, headers });
+      if (
+        allowGatewayRetry &&
+        attempt < maxAttempts - 1 &&
+        [502, 503, 504].includes(res.status)
+      ) {
+        await sleep(800 * (attempt + 1));
+        continue;
+      }
+      break;
+    }
+
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(data.message || "Request failed");
+      const err = new Error(messageForStatus(res.status, data));
       err.status = res.status;
       err.data = data;
       throw err;
