@@ -1,6 +1,8 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 import { FaClock } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext.jsx";
+import AccountStatusPanelReveal from "./AccountStatusPanelReveal.jsx";
 import "./OfficerPendingGate.css";
 
 /**
@@ -9,6 +11,7 @@ import "./OfficerPendingGate.css";
  * status header instead of the page content.
  */
 export default function OfficerPendingGate({ children }) {
+  const { pathname } = useLocation();
   const { user } = useAuth();
   const isOfficer = user?.role === "officer";
   const isPending = user?.status === "pending";
@@ -19,7 +22,7 @@ export default function OfficerPendingGate({ children }) {
 
   return (
     <div className="officer-pending-gate-page">
-      <div className="officer-pending-gate-status-header">
+      <AccountStatusPanelReveal key={pathname} className="officer-pending-gate-status-header">
         <div className="officer-pending-gate-status-icon" aria-hidden="true">
           <FaClock />
         </div>
@@ -29,7 +32,7 @@ export default function OfficerPendingGate({ children }) {
             Your account is awaiting approval by an administrator. You will be notified once your account has been reviewed.
           </p>
         </div>
-      </div>
+      </AccountStatusPanelReveal>
     </div>
   );
 }

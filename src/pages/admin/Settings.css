@@ -18,34 +18,7 @@
   to { transform: rotate(360deg); }
 }
 
-.system-settings-container.page-enter {
-  animation: system-settings-pageEnter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-@keyframes system-settings-pageEnter {
-  from { opacity: 0; transform: translateY(-16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.system-settings-container .tab-transition-enter {
-  animation: system-settings-tabEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-}
-@keyframes system-settings-tabEnter {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.system-settings-container .system-settings-card-left {
-  animation: system-settings-contentFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.08s forwards;
-  opacity: 0;
-}
-.system-settings-container .system-settings-card-right {
-  animation: system-settings-contentFadeIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.12s forwards;
-  opacity: 0;
-}
-@keyframes system-settings-contentFadeIn {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* Shell + column entrances: Framer Motion (appRevealMotionProps) */
 
 /* ----- Page header (centered) - matches spacing pattern from other pages (mt-4 mb-3) ----- */
 .system-settings-header {

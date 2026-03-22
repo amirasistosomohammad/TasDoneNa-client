@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { api } from "../services/api.js";
+import AccountStatusPanelReveal from "../components/AccountStatusPanelReveal.jsx";
 import {
   FaTachometerAlt,
   FaTasks,
@@ -146,7 +147,7 @@ const Dashboard = () => {
 
       {/* Alert – account pending approval */}
       {isPending && (
-        <div className="card border-0 shadow-sm account-approvals-card mb-4">
+        <AccountStatusPanelReveal className="card border-0 shadow-sm account-approvals-card mb-4">
           <div className="account-approvals-detail-body">
             <div className="d-flex align-items-start gap-2 p-3 rounded" style={{ background: "rgba(245, 158, 11, 0.08)", border: "1px solid rgba(245, 158, 11, 0.25)" }}>
               <FaBell className="text-warning flex-shrink-0 mt-1" aria-hidden />
@@ -158,7 +159,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        </div>
+        </AccountStatusPanelReveal>
       )}
 
       {/* Overview – single card, clean stat grid (corporate / government style) */}

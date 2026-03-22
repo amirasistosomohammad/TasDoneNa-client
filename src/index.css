@@ -2590,22 +2590,6 @@ footer small {
   to { opacity: 0; transform: translateY(-50px) scale(0.95); }
 }
 
-/* Page transition – content enters from above (CSS-only, no flash) */
-@keyframes pageEnter {
-  from {
-    opacity: 0;
-    transform: translateY(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.page-transition-enter {
-  animation: pageEnter 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) both;
-}
-
 /* Create task form – focus border pink (accent), same as login page */
 .task-form .form-control:focus,
 .task-form .form-select:focus {
@@ -4577,18 +4561,6 @@ footer small {
  opacity: 1;
  transform: translateY(0);
  }
-}
-
-/* Smooth transitions for page loads */
-.page-transition-enter {
- opacity: 0;
- transform: translateY(20px);
-}
-
-.page-transition-enter-active {
- opacity: 1;
- transform: translateY(0);
- transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 /* Enhanced loading spinner */

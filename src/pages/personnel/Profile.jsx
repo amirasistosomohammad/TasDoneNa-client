@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import { api } from "../../services/api.js";
 import { showToast } from "../../services/notificationService.js";
+import AccountStatusPanelReveal from "../../components/AccountStatusPanelReveal.jsx";
+import { appRevealMotionProps } from "../../motion/appReveal.js";
 import {
   FaUser,
   FaSpinner,
@@ -24,6 +27,7 @@ const normalizeLogoUrl = (url) => {
 
 export default function Profile() {
   const { user, refreshUser } = useAuth();
+  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState("account");
   const [profileLoading, setProfileLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -234,13 +238,17 @@ export default function Profile() {
 
   if (!user) return null;
 
+  const profileShellReveal = appRevealMotionProps(reducedMotion);
+  const profileLeftReveal = appRevealMotionProps(reducedMotion, { delay: 0.08, y: -12, duration: 0.4 });
+  const profileRightReveal = appRevealMotionProps(reducedMotion, { delay: 0.12, y: -12, duration: 0.4 });
+
   const avatarUrl = user.avatar_url ? normalizeLogoUrl(user.avatar_url) : null;
   const schoolLogoUrl = user.school_logo_url ? normalizeLogoUrl(user.school_logo_url) : null;
   const showSchoolLogo = user.role === "officer" || user.role === "admin";
 
   return (
     <div className="container-fluid px-3 px-md-4">
-      <div className="profile-settings-container system-settings-container page-enter">
+      <motion.div className="profile-settings-container system-settings-container" {...profileShellReveal}>
         <div className="system-settings-header mt-4 mb-3">
           <div className="profile-settings-avatar-wrap system-settings-header-icon-wrap">
             {avatarUrl ? (
@@ -263,7 +271,7 @@ export default function Profile() {
         </div>
 
         <div className="system-settings-row mb-4">
-          <div className="system-settings-card system-settings-card-left">
+          <motion.div className="system-settings-card system-settings-card-left" {...profileLeftReveal}>
             <h2 className="system-settings-menu-title">Profile Menu</h2>
             <nav className="system-settings-nav">
               <button
@@ -287,12 +295,12 @@ export default function Profile() {
                 </div>
               </button>
             </nav>
-          </div>
+          </motion.div>
 
-          <div className="system-settings-card system-settings-card-right">
+          <motion.div className="system-settings-card system-settings-card-right" {...profileRightReveal}>
             <div className="system-settings-content-body">
               {activeTab === "account" && (
-                <div className="system-settings-tab-panel tab-transition-enter">
+                <AccountStatusPanelReveal className="system-settings-tab-panel">
                   <h2 className="system-settings-card-title">
                     <FaUser className="system-settings-card-title-icon" />
                     Account information
@@ -506,11 +514,11 @@ export default function Profile() {
                       </button>
                     </div>
                   </form>
-                </div>
+              </AccountStatusPanelReveal>
               )}
 
               {activeTab === "security" && (
-                <div className="system-settings-tab-panel tab-transition-enter">
+                <AccountStatusPanelReveal className="system-settings-tab-panel">
                   <h2 className="system-settings-card-title">
                     <FaLock className="system-settings-card-title-icon" />
                     Security
@@ -662,12 +670,12 @@ export default function Profile() {
                       </button>
                     </div>
                   </form>
-                </div>
+              </AccountStatusPanelReveal>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

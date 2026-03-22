@@ -1,0 +1,6 @@
+/* Layout helper for outlet / panels (motion handles opacity & y) */
+.layout-outlet-reveal {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}

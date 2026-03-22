@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import { FaCog, FaLock, FaSpinner, FaImage, FaSave, FaEye, FaEyeSlash, FaDatabase, FaDownload, FaClock, FaCalendarCheck } from "react-icons/fa";
 import { useAuth } from "../../contexts/AuthContext.jsx";
 import { api } from "../../services/api.js";
 import { showToast } from "../../services/notificationService.js";
+import AccountStatusPanelReveal from "../../components/AccountStatusPanelReveal.jsx";
+import { appRevealMotionProps } from "../../motion/appReveal.js";
 import "./Settings.css";
 
 /**
@@ -12,6 +15,7 @@ import "./Settings.css";
  */
 export default function Settings() {
   const { user } = useAuth();
+  const reducedMotion = useReducedMotion();
   const [activeTab, setActiveTab] = useState("password");
 
   const [passwordForm, setPasswordForm] = useState({
@@ -470,10 +474,13 @@ export default function Settings() {
   if (!user) return null;
 
   const roleLabel = user?.role === "admin" ? "Administrator" : user?.role || "User";
+  const settingsShellReveal = appRevealMotionProps(reducedMotion);
+  const settingsLeftReveal = appRevealMotionProps(reducedMotion, { delay: 0.08, y: -12, duration: 0.4 });
+  const settingsRightReveal = appRevealMotionProps(reducedMotion, { delay: 0.12, y: -12, duration: 0.4 });
 
   return (
     <div className="container-fluid px-3 px-md-4">
-      <div className="system-settings-container page-enter">
+      <motion.div className="system-settings-container" {...settingsShellReveal}>
         {/* Page header — centered, gear + title + subtitle */}
         <div className="system-settings-header mt-4 mb-3">
         <div className="system-settings-header-icon-wrap">
@@ -491,7 +498,7 @@ export default function Settings() {
       {/* Two-column layout: left = menu, right = content */}
       <div className="system-settings-row mb-4">
         {/* Left card — Settings menu */}
-        <div className="system-settings-card system-settings-card-left">
+        <motion.div className="system-settings-card system-settings-card-left" {...settingsLeftReveal}>
           <h2 className="system-settings-menu-title">Settings Menu</h2>
           <nav className="system-settings-nav">
             <button
@@ -529,13 +536,13 @@ export default function Settings() {
               </button>
             )}
           </nav>
-        </div>
+        </motion.div>
 
         {/* Right card — tab content */}
-        <div className="system-settings-card system-settings-card-right">
+        <motion.div className="system-settings-card system-settings-card-right" {...settingsRightReveal}>
           <div className="system-settings-content-body">
             {activeTab === "password" && (
-              <div className="system-settings-tab-panel tab-transition-enter">
+              <AccountStatusPanelReveal className="system-settings-tab-panel">
                 <h2 className="system-settings-card-title">
                   <FaLock className="system-settings-card-title-icon" />
                   Change Administrator Password
@@ -659,11 +666,11 @@ export default function Settings() {
                     </button>
                   </div>
                 </form>
-              </div>
+              </AccountStatusPanelReveal>
             )}
 
             {activeTab === "branding" && (
-              <div className="system-settings-tab-panel tab-transition-enter">
+              <AccountStatusPanelReveal className="system-settings-tab-panel">
                 <h2 className="system-settings-card-title">
                   <FaImage className="system-settings-card-title-icon" />
                   System Branding
@@ -765,11 +772,11 @@ export default function Settings() {
                     </form>
                   </>
                 )}
-              </div>
+              </AccountStatusPanelReveal>
             )}
 
             {activeTab === "backup" && user?.role === "admin" && (
-              <div className="system-settings-tab-panel tab-transition-enter">
+              <AccountStatusPanelReveal className="system-settings-tab-panel">
                 <h2 className="system-settings-card-title">
                   <FaDatabase className="system-settings-card-title-icon" />
                   Data Backup
@@ -953,12 +960,12 @@ export default function Settings() {
                     </div>
                   )}
                 </div>
-              </div>
+              </AccountStatusPanelReveal>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
     </div>
   );
 }

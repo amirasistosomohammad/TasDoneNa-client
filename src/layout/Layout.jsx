@@ -9,10 +9,11 @@ import { showToast, showAlert } from "../services/notificationService.js";
 import { showAccountRejectionModal } from "../components/AccountRejectionModal.jsx";
 import { showAccountDeactivatedModal } from "../components/AccountDeactivatedModal.jsx";
 import OfficerPendingGate from "../components/OfficerPendingGate.jsx";
+import AccountStatusPanelReveal from "../components/AccountStatusPanelReveal.jsx";
 
 /**
  * Main app layout for authenticated routes.
- * Page transitions use pure CSS to avoid flash/duplicate animation issues.
+ * Main outlet uses AccountStatusPanelReveal (same motion as pending-account panels).
  */
 const Layout = () => {
   const location = useLocation();
@@ -174,9 +175,9 @@ const Layout = () => {
         <div id="layoutSidenav_content" onClick={handleMainClick}>
           <main className="layout-main">
             <OfficerPendingGate>
-              <div key={location.pathname} className="page-transition-enter" style={{ minHeight: "100%" }}>
+              <AccountStatusPanelReveal key={location.pathname} className="layout-outlet-reveal" style={{ minHeight: "100%" }}>
                 <Outlet />
-              </div>
+              </AccountStatusPanelReveal>
             </OfficerPendingGate>
           </main>
           <Footer />
