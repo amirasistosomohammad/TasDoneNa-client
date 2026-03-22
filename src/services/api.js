@@ -131,6 +131,114 @@ export const api = {
   delete(endpoint) {
     return this.request(endpoint, { method: "DELETE" });
   },
+
+  /**
+   * GET binary export (e.g. Excel). Triggers browser download; throws like request() on JSON errors.
+   */
+  download(endpoint, fallbackFilename = "download") {
+    const token = getToken();
+    const url = `${this.baseUrl.replace(/\/$/, "")}/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    return fetch(url, {
+      method: "GET",
+      headers: {
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/octet-stream, application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    }).then(async (res) => {
+      const ct = res.headers.get("Content-Type") || "";
+      if (!res.ok) {
+        const data = ct.includes("json") ? await res.json().catch(() => ({})) : {};
+        const err = new Error(data.message || `Download failed (${res.status})`);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      if (ct.includes("application/json")) {
+        const data = await res.json().catch(() => ({}));
+        const err = new Error(data.message || "Unexpected response");
+        err.data = data;
+        throw err;
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      let filename = fallbackFilename;
+      const star = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
+      const plain = /filename="([^"]+)"/i.exec(cd);
+      const plain2 = /filename=([^;\s]+)/i.exec(cd);
+      const raw = star?.[1]?.trim() || plain?.[1]?.trim() || plain2?.[1]?.trim();
+      if (raw) {
+        try {
+          filename = decodeURIComponent(raw.replace(/^"|"$/g, ""));
+        } catch {
+          filename = raw.replace(/^"|"$/g, "");
+        }
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+    });
+  },
+
+  /**
+   * POST JSON then receive binary (e.g. Excel). Same error handling as download().
+   */
+  downloadPost(endpoint, body, fallbackFilename = "download") {
+    const token = getToken();
+    const url = `${this.baseUrl.replace(/\/$/, "")}/api${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept:
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/octet-stream, application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(body ?? {}),
+    }).then(async (res) => {
+      const ct = res.headers.get("Content-Type") || "";
+      if (!res.ok) {
+        const data = ct.includes("json") ? await res.json().catch(() => ({})) : {};
+        const err = new Error(data.message || `Download failed (${res.status})`);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      if (ct.includes("application/json")) {
+        const data = await res.json().catch(() => ({}));
+        const err = new Error(data.message || "Unexpected response");
+        err.data = data;
+        throw err;
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      let filename = fallbackFilename;
+      const star = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(cd);
+      const plain = /filename="([^"]+)"/i.exec(cd);
+      const plain2 = /filename=([^;\s]+)/i.exec(cd);
+      const raw = star?.[1]?.trim() || plain?.[1]?.trim() || plain2?.[1]?.trim();
+      if (raw) {
+        try {
+          filename = decodeURIComponent(raw.replace(/^"|"$/g, ""));
+        } catch {
+          filename = raw.replace(/^"|"$/g, "");
+        }
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+    });
+  },
 };
 
 export default api;

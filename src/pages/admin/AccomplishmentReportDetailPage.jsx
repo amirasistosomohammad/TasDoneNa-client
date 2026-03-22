@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { api } from "../../services/api.js";
 import { showAlert, showToast } from "../../services/notificationService.js";
-import { FaArrowLeft, FaFileAlt, FaCheckCircle, FaClock, FaUser } from "react-icons/fa";
+import { FaArrowLeft, FaFileAlt, FaFileExcel, FaCheckCircle, FaClock, FaUser } from "react-icons/fa";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "—";
@@ -29,6 +29,7 @@ const AccomplishmentReportDetailPage = () => {
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,6 +105,22 @@ const AccomplishmentReportDetailPage = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!report) return;
+    setExporting(true);
+    const fallback = `Accomplishment_Report_${report.year}-${String(report.month).padStart(2, "0")}.xlsx`;
+    api
+      .download(`/admin/accomplishment-reports/${report.id}/export`, fallback)
+      .then(() => showToast.success("Excel download started."))
+      .catch((err) =>
+        showAlert.error(
+          "Export failed",
+          err?.data?.message || err.message || "Could not download the Excel file."
+        )
+      )
+      .finally(() => setExporting(false));
+  };
+
   if (loading) {
     return (
       <div className="container-fluid px-3 px-md-4">
@@ -146,7 +163,21 @@ const AccomplishmentReportDetailPage = () => {
             Accomplishment Report — {getMonthName(report.month)} {report.year}
           </h1>
         </div>
-        <div className="d-flex align-items-center gap-2">
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2"
+            onClick={handleExportExcel}
+            disabled={exporting}
+            aria-label="Download accomplishment report as Excel"
+          >
+            {exporting ? (
+              <span className="spinner-border spinner-border-sm" aria-hidden />
+            ) : (
+              <FaFileExcel aria-hidden />
+            )}
+            Download Excel
+          </button>
           {statusIcon}
           <span className={`badge ${report.status === "noted" ? "bg-success" : report.status === "submitted" ? "bg-warning text-dark" : "bg-secondary"}`}>
             {statusLabel}

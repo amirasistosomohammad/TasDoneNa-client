@@ -259,7 +259,7 @@ const Dashboard = () => {
                         style={{ color: "inherit" }}
                       >
                         <FaFileAlt className="me-2" />
-                        Generate accomplishment report
+                        Accomplishment report (Excel download)
                       </button>
                     </li>
                     <li className="py-2">
@@ -331,7 +331,7 @@ const Dashboard = () => {
                 </div>
               ) : recentTasks.length === 0 && recentReports.length === 0 ? (
                 <p className="small text-muted mb-0">
-                  No recent activity yet. Start by creating a task or submitting a monthly report.
+                  No recent activity yet. Start by creating a task or downloading your monthly accomplishment report.
                 </p>
               ) : (
                 <div className="list-group list-group-flush">

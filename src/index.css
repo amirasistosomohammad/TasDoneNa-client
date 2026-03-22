@@ -2660,6 +2660,31 @@ footer small {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* School Head modal on accomplishment report download — reuses detail modal shell */
+.acc-report-sh-modal .account-approvals-detail-backdrop {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.acc-report-sh-modal.acc-report-sh-modal--open .account-approvals-detail-backdrop {
+  opacity: 1;
+}
+
+.acc-report-sh-modal .account-approvals-detail-modal {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(14px) scale(0.98);
+  transition:
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.acc-report-sh-modal.acc-report-sh-modal--open .account-approvals-detail-modal {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
 /* Detail modal – Portal structure (same as CPC), full officer info + Approve / Reject */
 .account-approvals-detail-overlay {
   position: fixed;
