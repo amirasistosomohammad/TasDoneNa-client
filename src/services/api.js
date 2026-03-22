@@ -54,16 +54,37 @@ export const api = {
     const headers = { Accept: "application/json" };
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
-    return fetch(url, { method: "POST", body: formData, headers }).then(async (res) => {
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = new Error(data.message || "Upload failed");
-        err.status = res.status;
-        err.data = data;
-        throw err;
-      }
-      return data;
-    });
+    const fetchOpts = { method: "POST", body: formData, headers };
+    // Longer than default fetch; gateway/proxy may still timeout first (raise limits on DO if needed).
+    if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) {
+      fetchOpts.signal = AbortSignal.timeout(180000);
+    }
+    return fetch(url, fetchOpts)
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          let message = data.message || "Upload failed";
+          if (res.status === 504 || res.status === 502) {
+            message =
+              "Server timed out while uploading. Try a smaller image or retry in a moment.";
+          }
+          const err = new Error(message);
+          err.status = res.status;
+          err.data = data;
+          throw err;
+        }
+        return data;
+      })
+      .catch((e) => {
+        if (e?.name === "TimeoutError" || e?.name === "AbortError") {
+          const err = new Error(
+            "Upload timed out. Try again, use a smaller image, or check your connection."
+          );
+          err.status = 408;
+          throw err;
+        }
+        throw e;
+      });
   },
 
   put(endpoint, body) {

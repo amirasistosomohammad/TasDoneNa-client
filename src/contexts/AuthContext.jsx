@@ -28,8 +28,14 @@ export const AuthProvider = ({ children }) => {
     setAuth(null);
   }, [setAuth]);
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (prefetchedUser = null) => {
     if (!token) return null;
+    // After avatar/logo upload, API already returns full user — merge to skip an extra GET /user
+    // (avoids failures when uploads succeed but /user is slow or times out behind the gateway).
+    if (prefetchedUser != null && typeof prefetchedUser === "object") {
+      setUser((prev) => ({ ...(prev || {}), ...prefetchedUser }));
+      return prefetchedUser;
+    }
     try {
       const data = await api.get("/user");
       setUser(data.user);

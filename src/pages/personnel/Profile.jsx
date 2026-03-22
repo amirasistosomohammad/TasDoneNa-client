@@ -121,7 +121,7 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("avatar", file);
       const res = await api.upload("/user/avatar", fd);
-      if (res?.user) await refreshUser();
+      if (res?.user) await refreshUser(res.user);
       showToast.success("Profile photo updated.");
     } catch (err) {
       const msg =
@@ -149,7 +149,7 @@ export default function Profile() {
       const fd = new FormData();
       fd.append("school_logo", file);
       const res = await api.upload("/user/school-logo", fd);
-      if (res?.user) await refreshUser();
+      if (res?.user) await refreshUser(res.user);
       showToast.success("School logo updated.");
     } catch (err) {
       const msg =
@@ -177,7 +177,7 @@ export default function Profile() {
         division: profileForm.division.trim() || null,
         school_name: profileForm.school_name.trim() || null,
       });
-      if (res?.user) await refreshUser();
+      if (res?.user) await refreshUser(res.user);
       showToast.success("Profile updated successfully.");
     } catch (err) {
       const msg =
