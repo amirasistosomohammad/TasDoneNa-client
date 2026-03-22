@@ -6,6 +6,7 @@ const SystemSettingsContext = createContext(null);
 const normalizeLogoUrl = (url) => {
   if (!url) return null;
   if (url.startsWith("http")) return url;
+  // Backend uses GET /api/settings/logo so images work without a public /storage symlink.
   const baseUrl = api.baseUrl.replace(/\/$/, "");
   return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
 };

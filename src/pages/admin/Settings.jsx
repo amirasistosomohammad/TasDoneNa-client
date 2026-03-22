@@ -144,7 +144,6 @@ export default function Settings() {
       setSystemSettingsLoading(true);
       try {
         const res = await api.get("/settings");
-        console.log("Settings loaded:", res);
         setSystemSettings({
           app_name: res?.app_name || "",
           logo_url: res?.logo_url || null,
@@ -217,7 +216,6 @@ export default function Settings() {
       const fd = new FormData();
       fd.append("logo", file);
       const res = await api.upload("/admin/settings/logo", fd);
-      console.log("Logo upload response:", res);
       setSystemSettings((prev) => ({
         ...prev,
         logo_url: res?.logo_url || prev.logo_url,
@@ -454,12 +452,9 @@ export default function Settings() {
   const normalizeLogoUrl = (url) => {
     if (!url) return null;
     if (url.startsWith("http")) return url;
-    // Laravel Storage::url() returns paths like /storage/path/to/file
-    // We need to prepend the base URL
+    // API returns /api/settings/logo (streamed by Laravel); prepend API origin (VITE_API_URL root).
     const baseUrl = api.baseUrl.replace(/\/$/, "");
-    const normalized = `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-    console.log("Settings normalizing logo URL:", { original: url, normalized, baseUrl });
-    return normalized;
+    return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
   };
 
   if (!user) return null;
@@ -681,7 +676,6 @@ export default function Settings() {
                               alt="System logo"
                               onLoad={() => {
                                 setLogoError(false);
-                                console.log("Logo loaded successfully");
                               }}
                               onError={(e) => {
                                 console.error("Logo failed to load:", normalizeLogoUrl(systemSettings.logo_url));

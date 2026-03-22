@@ -18,9 +18,7 @@ const normalizeLogoUrl = (url) => {
   // Laravel Storage::url() returns paths like /storage/path/to/file
   // We need to prepend the base URL
   const baseUrl = api.baseUrl.replace(/\/$/, "");
-  const normalized = `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
-  console.log("Topbar normalizing logo URL:", { original: url, normalized, baseUrl });
-  return normalized;
+  return `${baseUrl}${url.startsWith("/") ? url : `/${url}`}`;
 };
 
 const Topbar = ({ onToggleSidebar, appName, logoUrl, settingsLoading }) => {
