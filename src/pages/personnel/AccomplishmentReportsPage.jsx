@@ -145,12 +145,15 @@ const AccomplishmentReportsPage = () => {
 
     setGenerating(true);
     api
-      .downloadPost("/accomplishment-reports/export", {
-        year,
-        month,
-        school_head_name: schoolHeadName.trim(),
-        school_head_designation: schoolHeadDesignation.trim(),
-      }, fallback)
+      .generateAccomplishmentReportExport(
+        {
+          year,
+          month,
+          school_head_name: schoolHeadName.trim(),
+          school_head_designation: schoolHeadDesignation.trim(),
+        },
+        fallback
+      )
       .then(() => {
         showToast.success("Report downloaded.");
         closeSchoolHeadModal();

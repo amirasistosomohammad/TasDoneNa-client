@@ -243,6 +243,62 @@ export const api = {
       setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
     });
   },
+
+  /**
+   * Period accomplishment Excel: POST queues generation (202), poll status, then GET download.
+   * Avoids gateway timeouts on slow Excel builds (e.g. DigitalOcean App Platform).
+   */
+  async generateAccomplishmentReportExport(body, fallbackFilename = "download") {
+    const data = await this.post("/accomplishment-reports/export", body);
+    const token = data?.export_token;
+    if (!token || typeof token !== "string") {
+      const err = new Error("Unexpected response from server.");
+      err.data = data;
+      throw err;
+    }
+    const interval = Math.min(Math.max(Number(data.poll_interval_ms) || 500, 250), 2000);
+    const maxWaitMs = 180_000;
+    const start = Date.now();
+    while (true) {
+      if (Date.now() - start > maxWaitMs) {
+        const err = new Error(
+          "Report generation is taking too long. Try again in a moment (or retry after the app wakes from idle)."
+        );
+        err.status = 408;
+        throw err;
+      }
+      let st;
+      try {
+        st = await this.get(`/accomplishment-reports/export/${encodeURIComponent(token)}/status`);
+      } catch (e) {
+        if (e?.status === 410) {
+          throw e;
+        }
+        await sleep(interval);
+        continue;
+      }
+      if (st.status === "ready") {
+        break;
+      }
+      if (st.status === "failed") {
+        const err = new Error(st.message || "Could not build the report.");
+        err.data = st;
+        throw err;
+      }
+      if (st.status === "expired") {
+        const err = new Error(
+          st.message || "This export expired. Generate the report again."
+        );
+        err.status = 410;
+        throw err;
+      }
+      await sleep(interval);
+    }
+    return this.download(
+      `/accomplishment-reports/export/${encodeURIComponent(token)}/download`,
+      fallbackFilename
+    );
+  },
 };
 
 export default api;
