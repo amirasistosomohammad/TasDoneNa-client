@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { api } from "../../services/api.js";
 import { showToast } from "../../services/notificationService.js";
 import { FaFileAlt, FaCalendarAlt, FaTimes } from "react-icons/fa";
 import Portal from "../../components/Portal.jsx";
-import * as XLSX from "xlsx";
 
 const getMonthName = (month) => {
   const months = [
@@ -144,53 +144,25 @@ const AccomplishmentReportsPage = () => {
     const fallback = `Accomplishment_Report_${year}-${String(month).padStart(2, "0")}.xlsx`;
 
     setGenerating(true);
-    try {
-      const sheetName = "Accomplishment";
-      const monthName = getMonthName(month);
-      const name = schoolHeadName.trim();
-      const designation = schoolHeadDesignation.trim();
-
-      // Client-only nuclear fallback: always produce a valid XLSX without backend calls.
-      const rows = [
-        ["DEPARTMENT OF EDUCATION"],
-        ["Schools Division Office"],
-        [""],
-        ["INDIVIDUAL ACCOMPLISHMENT REPORT"],
-        [`for the Month of ${monthName}, ${year}`],
-        [""],
-        ["Prepared by", "", "", "Certified by"],
-        ["", "", "", ""],
-        ["Name", "", "", "Name"],
-        ["", "", "", name],
-        ["Designation", "", "", "Designation"],
-        ["", "", "", designation],
-        [""],
-        ["Accomplishments"],
-        ["(Use this file as the deployment-safe export template.)"],
-      ];
-
-      const ws = XLSX.utils.aoa_to_sheet(rows);
-      ws["!cols"] = [{ wch: 34 }, { wch: 10 }, { wch: 10 }, { wch: 34 }];
-      ws["!merges"] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
-        { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
-        { s: { r: 3, c: 0 }, e: { r: 3, c: 3 } },
-        { s: { r: 4, c: 0 }, e: { r: 4, c: 3 } },
-        { s: { r: 13, c: 0 }, e: { r: 13, c: 3 } },
-        { s: { r: 14, c: 0 }, e: { r: 14, c: 3 } },
-      ];
-
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-      XLSX.writeFile(wb, fallback, { compression: true });
-
-      showToast.success("Report downloaded.");
-      closeSchoolHeadModal();
-    } catch (err) {
-      setShModalError(err?.message || "Could not download the report.");
-    } finally {
-      setGenerating(false);
-    }
+    api
+      .downloadPost("/accomplishment-reports/export", {
+        year,
+        month,
+        school_head_name: schoolHeadName.trim(),
+        school_head_designation: schoolHeadDesignation.trim(),
+      }, fallback)
+      .then(() => {
+        showToast.success("Report downloaded.");
+        closeSchoolHeadModal();
+      })
+      .catch((err) => {
+        if (err.data?.message?.includes("future months")) {
+          setShModalError("Cannot generate reports for future months.");
+        } else {
+          setShModalError(err?.data?.message || err.message || "Could not download the report.");
+        }
+      })
+      .finally(() => setGenerating(false));
   };
 
   return (
