@@ -191,6 +191,7 @@ export const AuthProvider = ({ children }) => {
       employee_id: formData.employee_id,
       position: formData.position,
       division: formData.division,
+      district: formData.district,
       school_name: formData.school_name,
     });
     return { success: true, message: data.message, email: data.email };

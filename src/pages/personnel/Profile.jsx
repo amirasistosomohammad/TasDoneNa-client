@@ -36,6 +36,7 @@ export default function Profile() {
     employee_id: "",
     position: "",
     division: "",
+    district: "",
     school_name: "",
   });
   const [passwordForm, setPasswordForm] = useState({
@@ -64,6 +65,7 @@ export default function Profile() {
         employee_id: user.employee_id || "",
         position: user.position || "",
         division: user.division || "",
+        district: user.district || "",
         school_name: user.school_name || "",
       });
     }
@@ -175,6 +177,7 @@ export default function Profile() {
         employee_id: profileForm.employee_id.trim() || null,
         position: profileForm.position.trim() || null,
         division: profileForm.division.trim() || null,
+        district: profileForm.district.trim() || null,
         school_name: profileForm.school_name.trim() || null,
       });
       if (res?.user) await refreshUser(res.user);
@@ -480,6 +483,23 @@ export default function Profile() {
                           placeholder="Optional"
                         />
                       </div>
+                      <div className="system-settings-form-group">
+                        <label className="system-settings-label">
+                          <FaMapMarkerAlt className="profile-settings-label-icon" /> District
+                        </label>
+                        <input
+                          type="text"
+                          name="district"
+                          className="system-settings-input profile-settings-input"
+                          value={profileForm.district}
+                          onChange={handleProfileChange}
+                          disabled={profileLoading}
+                          placeholder="Optional"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="profile-settings-grid">
                       <div className="system-settings-form-group">
                         <label className="system-settings-label">School name</label>
                         <input

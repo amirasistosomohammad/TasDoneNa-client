@@ -51,6 +51,7 @@ const Register = () => {
     employee_id: "",
     position: "",
     division: "",
+    district: "",
     school_name: "",
   });
 
@@ -254,6 +255,10 @@ const Register = () => {
 
     if (!form.division.trim()) {
       errors.division = "Please enter your division";
+    }
+
+    if (!form.district.trim()) {
+      errors.district = "Please enter your district";
     }
 
     if (!form.school_name.trim()) {
@@ -754,6 +759,50 @@ const Register = () => {
                 <div className={`invalid-feedback-wrapper${fieldErrors.division ? " invalid-feedback-visible" : ""}`}>
                   <div className="invalid-feedback d-block small mt-1">
                     {fieldErrors.division}
+                  </div>
+                </div>
+              </div>
+
+              {/* School Name */}
+              <div className="mb-3 position-relative">
+                <label
+                  htmlFor="district"
+                  className="form-label fw-semibold mb-2"
+                  style={{
+                    fontSize: "0.9rem",
+                    color: theme.textSecondary,
+                  }}
+                >
+                  District *
+                </label>
+                <div className="input-group">
+                  <span className="input-group-text bg-transparent border-end-0">
+                    <FaMapMarkerAlt className="text-muted" size={16} />
+                  </span>
+                  <input
+                    type="text"
+                    name="district"
+                    placeholder="District"
+                    value={form.district}
+                    onChange={handleInputChange}
+                    className={`form-control border-start-0 ps-2 fw-semibold ${
+                      fieldErrors.district ? "is-invalid" : ""
+                    }`}
+                    style={{
+                      backgroundColor: "var(--input-bg)",
+                      color: "var(--input-text)",
+                      borderColor: fieldErrors.district
+                        ? "#dc3545"
+                        : "var(--input-border)",
+                    }}
+                    required
+                    disabled={isSubmitting}
+                    id="district"
+                  />
+                </div>
+                <div className={`invalid-feedback-wrapper${fieldErrors.district ? " invalid-feedback-visible" : ""}`}>
+                  <div className="invalid-feedback d-block small mt-1">
+                    {fieldErrors.district}
                   </div>
                 </div>
               </div>
